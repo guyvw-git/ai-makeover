@@ -16,6 +16,8 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
     const [isComparing, setIsComparing] = useState(false);
     const [opacity, setOpacity] = useState(50);
     const [waitingForAutoCompare, setWaitingForAutoCompare] = useState(false);
+    const [showMagicInput, setShowMagicInput] = useState(false);
+    const [magicPrompt, setMagicPrompt] = useState('');
 
     useEffect(() => {
         if (aiUrl && waitingForAutoCompare) {
@@ -32,7 +34,17 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
     };
 
     const handleMagicWandClick = () => {
+        setShowMagicInput(true);
+    };
+
+    const handleMagicSend = () => {
+        if (magicPrompt.trim()) {
+            const newPrompt = prompt + " " + magicPrompt;
+            onPromptChange(newPrompt);
+        }
         setWaitingForAutoCompare(true);
+        setShowMagicInput(false);
+        setMagicPrompt('');
         onGenerate();
     };
 
@@ -98,7 +110,7 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
                         <img src={originalUrl} alt="Original" className="w-full h-full object-cover rounded-lg" />
 
                         {/* Magic Wand Button */}
-                        {!isGenerating && (
+                        {!isGenerating && !showMagicInput && (
                             <button
                                 onClick={handleMagicWandClick}
                                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm p-4 rounded-full transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 border border-white/50 shadow-lg"
@@ -108,6 +120,31 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.636-1.636L13.288 18.5l1.183-.394a2.25 2.25 0 001.636-1.636L16.5 15.25l.394 1.183a2.25 2.25 0 001.636 1.636l1.183.394-1.183.394a2.25 2.25 0 00-1.636 1.636z" />
                                 </svg>
                             </button>
+                        )}
+
+                        {/* Magic Input Field */}
+                        {showMagicInput && (
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 max-w-xs">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="text"
+                                        value={magicPrompt}
+                                        onChange={(e) => setMagicPrompt(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleMagicSend()}
+                                        autoFocus
+                                        className="w-full px-4 py-3 pr-12 bg-white/20 backdrop-blur-md border border-white/50 rounded-full text-[#404040] placeholder-white/70 outline-none focus:bg-white/30 transition-all shadow-lg"
+                                        placeholder="Add to prompt..."
+                                    />
+                                    <button
+                                        onClick={handleMagicSend}
+                                        className="absolute right-2 p-1.5 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         )}
 
                         {/* Loading Overlay on Original Image */}

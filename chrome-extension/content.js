@@ -15,6 +15,14 @@ const WAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="
 
 // Process images
 function processImages() {
+    // Avoid running on our own app (which has its own UI)
+    if (
+        document.body.classList.contains('zillow-makeover-app') ||
+        window.location.hostname === 'localhost' ||
+        window.location.port === '3000' ||
+        document.querySelector('meta[name="zillow-ai-extension-ignore"]')
+    ) return;
+
     const images = document.querySelectorAll('img');
     images.forEach(img => {
         // Skip if already processed or too small
