@@ -1,0 +1,185 @@
+/* Zillow AI Makeover Extension Styles */
+
+.zillow-ai-wand-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  padding: 12px;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zillow-ai-image-wrapper:hover .zillow-ai-wand-btn {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.zillow-ai-wand-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.zillow-ai-wand-icon {
+  width: 24px;
+  height: 24px;
+  stroke: white;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Overlay Container */
+.zillow-ai-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e5e7eb; /* gray-200 */
+  z-index: 10000;
+  overflow: hidden;
+  border-radius: inherit; /* Inherit from parent image if possible */
+}
+
+.zillow-ai-overlay img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zillow-ai-overlay-ai {
+  transition: opacity 0.1s ease;
+}
+
+/* Labels */
+.zillow-ai-label {
+  position: absolute;
+  top: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: white;
+  pointer-events: none;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.zillow-ai-label-original {
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.zillow-ai-label-ai {
+  right: 10px;
+  background: rgba(147, 51, 234, 0.9); /* purple-600 */
+}
+
+/* Slider */
+.zillow-ai-slider-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 300px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 10px 15px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zillow-ai-slider-label {
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: sans-serif;
+}
+
+.zillow-ai-slider-label.ai {
+  color: #c084fc; /* purple-400 */
+}
+
+.zillow-ai-range {
+  flex: 1;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.zillow-ai-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #a855f7; /* purple-500 */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Close Button */
+.zillow-ai-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2937;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10001;
+}
+
+.zillow-ai-close-btn:hover {
+  background: white;
+}
+
+/* Loading Spinner */
+.zillow-ai-spinner-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 8px;
+  border-radius: 50%;
+  z-index: 10000;
+}
+
+.zillow-ai-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: zillow-ai-spin 1s linear infinite;
+}
+
+@keyframes zillow-ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
