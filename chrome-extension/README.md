@@ -1,4 +1,4 @@
-# Zillow AI Makeover Chrome Extension
+# AI Makeover Chrome Extension
 
 ## Overview
 
@@ -13,7 +13,7 @@ The extension uses a configurable API endpoint defined in `config.js`.
 By default, the extension is configured to use `http://localhost:3000`:
 
 ```javascript
-const CONFIG = {
+window.AI_MAKEOVER_CONFIG = {
     API_BASE_URL: 'http://localhost:3000'
 };
 ```
@@ -26,7 +26,7 @@ Before deploying to production:
 2. Update the `API_BASE_URL` to your production server URL:
 
 ```javascript
-const CONFIG = {
+window.AI_MAKEOVER_CONFIG = {
     API_BASE_URL: 'https://your-production-domain.com'
 };
 ```
@@ -48,12 +48,12 @@ const CONFIG = {
 After modifying `config.js` or any other extension files:
 
 1. Go to `chrome://extensions/`
-2. Find "Zillow AI Makeover" in the list
+2. Find "AI Makeover" in the list
 3. Click the refresh icon (🔄) on the extension card
 
 ## Usage
 
-1. Navigate to any website with images (e.g., zillow.com, real estate listings)
+1. Navigate to any website with images (e.g., real estate listings)
 2. Hover over an image to see the Magic Wand button appear
 3. Click the Magic Wand to open the style selector or custom prompt input
 4. Choose a design style (Modern, Scandinavian, Industrial, etc.) or enter a custom prompt

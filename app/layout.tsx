@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zillow AI Makeover",
-  description: "Transform real estate listings with AI",
+  title: "AI Makeover",
+  description: "Give any house a full AI makeover",
 };
 
 export default function RootLayout({
@@ -25,10 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="zillow-ai-extension-ignore" content="true" />
+        <meta name="ai-makeover-extension-ignore" content="true" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased zillow-makeover-app`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ai-makeover-app`}
         suppressHydrationWarning
       >
         {children}

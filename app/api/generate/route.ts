@@ -1,17 +1,42 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { verifyGoogleToken } from '../verify-token';
+import { logRequest } from '../../lib/logger';
 
 export async function POST(request: Request) {
-    const { imageBase64, prompt, folderPath, fileName } = await request.json();
+    // Extract and verify auth token
+    const authHeader = request.headers.get('authorization');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
+    }
+
+    const token = authHeader.substring(7);
+
+    // Verify Google OAuth token
+    let userEmail: string;
+    try {
+        const userInfo = await verifyGoogleToken(token);
+        userEmail = userInfo.email;
+        console.log(`Image generation request from user: ${userEmail}`);
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
+    }
+
+    const { imageBase64, prompt, metadata, folderPath, fileName } = await request.json();
+    const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
 
     if (!imageBase64 || !prompt) {
+        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'Missing image or prompt' });
         return NextResponse.json({ error: 'Image data and prompt are required' }, { status: 400 });
     }
 
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         console.error('GOOGLE_API_KEY is missing');
+        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'Server config error' });
         return NextResponse.json({ error: 'Server configuration error: API key missing' }, { status: 500 });
     }
 
@@ -77,11 +102,6 @@ CRITICAL RULES:
      -H "Content-Type: application/json" \\
      -d '${JSON.stringify(payload)}'`;
 
-        // Log truncated cURL for server logs
-        //console.log("--- cURL Command (Truncated for logs) ---");
-        //console.log(`curl -X POST "${url.replace(apiKey, 'YOUR_API_KEY')}" ... (base64 data hidden) ...`);
-        //console.log("----------------------------------");
-
         const makeRequest = async () => {
             const response = await fetch(url, {
                 method: 'POST',
@@ -93,7 +113,7 @@ CRITICAL RULES:
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`API Error (${response.status}):`, errorText);
+                // console.error(`API Error (${response.status}):`, errorText);
                 const error = new Error(`API request failed with status ${response.status}: ${errorText}`);
                 (error as any).status = response.status;
                 (error as any).details = errorText;
@@ -153,6 +173,8 @@ CRITICAL RULES:
                 }
             }
 
+            logRequest({ userEmail, sourceUrl, status: 'SUCCESS' });
+
             return NextResponse.json({
                 originalUrl: 'local-file',
                 aiUrl: aiImageUrl,
@@ -205,6 +227,8 @@ CRITICAL RULES:
                                 const aiImageBase64 = inlineData.data;
                                 const aiImageUrl = `data:${inlineData.mime_type};base64,${aiImageBase64}`;
 
+                                logRequest({ userEmail, sourceUrl, status: 'SUCCESS (RETRY)' });
+
                                 return NextResponse.json({
                                     originalUrl: 'local-file',
                                     aiUrl: aiImageUrl,
@@ -220,6 +244,8 @@ CRITICAL RULES:
             }
 
             console.error("No image found in generation response. Full Response Structure:", JSON.stringify(data, null, 2));
+            logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'No image returned (Text response: ' + (textResponse ? 'Yes' : 'No') + ')' });
+
             return NextResponse.json({
                 error: 'AI model returned text instead of an image. This usually happens with exterior photos. Try using an interior room photo instead.',
                 textResponse: textResponse || 'No text response',
@@ -230,6 +256,8 @@ CRITICAL RULES:
 
     } catch (error: any) {
         console.error("Gemini API Error:", error);
+        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: error.message || 'Unknown error' });
+
         const status = error.status === 429 ? 429 : 500;
         const message = error.status === 429 ? 'Rate limit exceeded. Please try again in a moment.' : 'Failed to process image with AI';
 

@@ -1,5 +1,5 @@
-// Configuration for the Zillow AI Makeover Extension
-const CONFIG = {
+// Configuration for the AI Makeover Extension
+window.AI_MAKEOVER_CONFIG = {
     API_BASE_URL: 'http://localhost:3000'
 };
 

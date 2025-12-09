@@ -1,6 +1,6 @@
-/* Zillow AI Makeover Extension Styles */
+/* AI Makeover Extension Styles */
 
-.zillow-ai-wand-btn {
+.ai-makeover-wand-btn {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -20,17 +20,17 @@
   justify-content: center;
 }
 
-.zillow-ai-image-wrapper:hover .zillow-ai-wand-btn {
+.ai-makeover-image-wrapper:hover .ai-makeover-wand-btn {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
 
-.zillow-ai-wand-btn:hover {
+.ai-makeover-wand-btn:hover {
   background: rgba(255, 255, 255, 0.4);
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-.zillow-ai-wand-icon {
+.ai-makeover-wand-icon {
   width: 24px;
   height: 24px;
   color: white;
@@ -38,12 +38,12 @@
 }
 
 /* Animate the wand icon during loading */
-.zillow-ai-loading .zillow-ai-wand-icon {
-  animation: zillow-ai-sparkle-pulse 1.5s ease-in-out infinite;
+.ai-makeover-loading .ai-makeover-wand-icon {
+  animation: ai-makeover-sparkle-pulse 1.5s ease-in-out infinite;
   filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8));
 }
 
-@keyframes zillow-ai-sparkle-pulse {
+@keyframes ai-makeover-sparkle-pulse {
 
   0%,
   100% {
@@ -72,7 +72,7 @@
 }
 
 /* Overlay Container */
-.zillow-ai-overlay {
+.ai-makeover-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -86,7 +86,7 @@
   /* Inherit from parent image if possible */
 }
 
-.zillow-ai-overlay img {
+.ai-makeover-overlay img {
   position: absolute;
   top: 0;
   left: 0;
@@ -95,12 +95,12 @@
   object-fit: cover;
 }
 
-.zillow-ai-overlay-ai {
+.ai-makeover-overlay-ai {
   transition: opacity 0.1s ease;
 }
 
 /* Labels */
-.zillow-ai-label {
+.ai-makeover-label {
   position: absolute;
   top: 10px;
   padding: 4px 8px;
@@ -112,19 +112,19 @@
   font-weight: bold;
 }
 
-.zillow-ai-label-original {
+.ai-makeover-label-original {
   left: 10px;
   background: rgba(0, 0, 0, 0.7);
 }
 
-.zillow-ai-label-ai {
+.ai-makeover-label-ai {
   right: 10px;
   background: rgba(147, 51, 234, 0.9);
   /* purple-600 */
 }
 
 /* Slider */
-.zillow-ai-slider-container {
+.ai-makeover-slider-container {
   position: absolute;
   bottom: 20px;
   left: 50%;
@@ -140,7 +140,7 @@
   gap: 10px;
 }
 
-.zillow-ai-slider-label {
+.ai-makeover-slider-label {
   color: white;
   font-size: 10px;
   font-weight: bold;
@@ -148,12 +148,12 @@
   font-family: sans-serif;
 }
 
-.zillow-ai-slider-label.ai {
+.ai-makeover-slider-label.ai {
   color: #c084fc;
   /* purple-400 */
 }
 
-.zillow-ai-range {
+.ai-makeover-range {
   flex: 1;
   height: 4px;
   background: #e5e7eb;
@@ -162,7 +162,7 @@
   cursor: pointer;
 }
 
-.zillow-ai-range::-webkit-slider-thumb {
+.ai-makeover-range::-webkit-slider-thumb {
   appearance: none;
   width: 16px;
   height: 16px;
@@ -173,7 +173,7 @@
 }
 
 /* Close Button */
-.zillow-ai-close-btn {
+.ai-makeover-close-btn {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
@@ -188,24 +188,24 @@
   margin-left: 8px;
 }
 
-.zillow-ai-close-btn svg {
+.ai-makeover-close-btn svg {
   color: white;
 }
 
-.zillow-ai-close-btn:hover {
+.ai-makeover-close-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
 /* Loading state for wand button */
-.zillow-ai-wand-btn.zillow-ai-loading {
-  animation: zillow-ai-spin-outline 2s linear infinite;
+.ai-makeover-wand-btn.ai-makeover-loading {
+  animation: ai-makeover-spin-outline 2s linear infinite;
   pointer-events: none;
   opacity: 1 !important;
   transform: translate(-50%, -50%) scale(1) !important;
 }
 
-@keyframes zillow-ai-spin-outline {
+@keyframes ai-makeover-spin-outline {
   0% {
     box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0.8),
       4px 0 0 2px rgba(249, 115, 22, 0),
@@ -248,7 +248,7 @@
 }
 
 /* Magic Input Container */
-.zillow-ai-magic-input-container {
+.ai-makeover-magic-input-container {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -260,25 +260,25 @@
   align-items: center;
 }
 
-.zillow-ai-magic-input-container.text-mode {
+.ai-makeover-magic-input-container.text-mode {
   width: 75%;
   max-width: 28rem;
   /* max-w-md */
 }
 
-.zillow-ai-magic-input-container.style-mode {
+.ai-makeover-magic-input-container.style-mode {
   width: auto;
 }
 
 /* Text Input Mode */
-.zillow-ai-input-wrapper {
+.ai-makeover-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
 
-.zillow-ai-text-input {
+.ai-makeover-text-input {
   width: 100%;
   padding: 22px 48px;
   /* Increased padding for height match */
@@ -294,15 +294,15 @@
   min-width: 300px;
 }
 
-.zillow-ai-text-input::placeholder {
+.ai-makeover-text-input::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.zillow-ai-text-input:focus {
+.ai-makeover-text-input:focus {
   background: rgba(255, 255, 255, 0.3);
 }
 
-.zillow-ai-style-toggle {
+.ai-makeover-style-toggle {
   position: absolute;
   left: 8px;
   padding: 8px;
@@ -320,19 +320,19 @@
   z-index: 10;
 }
 
-.zillow-ai-style-toggle svg {
+.ai-makeover-style-toggle svg {
   width: 18px !important;
   height: 18px !important;
   stroke: white !important;
   flex-shrink: 0;
 }
 
-.zillow-ai-style-toggle:hover {
+.ai-makeover-style-toggle:hover {
   background: rgba(255, 255, 255, 0.5);
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-.zillow-ai-send-btn {
+.ai-makeover-send-btn {
   position: absolute;
   right: 8px;
   padding: 8px;
@@ -349,28 +349,28 @@
   justify-content: center;
 }
 
-.zillow-ai-send-btn svg {
+.ai-makeover-send-btn svg {
   width: 18px !important;
   height: 18px !important;
   stroke: white !important;
   flex-shrink: 0;
 }
 
-.zillow-ai-send-btn:hover {
+.ai-makeover-send-btn:hover {
   background: rgba(255, 255, 255, 0.5);
   border-color: rgba(255, 255, 255, 0.6);
 }
 
 /* Style Selector Mode */
-.zillow-ai-style-selector {
+.ai-makeover-style-selector {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: zillow-ai-zoom-in 0.2s ease-out;
+  animation: ai-makeover-zoom-in 0.2s ease-out;
 }
 
-.zillow-ai-selector-bar {
+.ai-makeover-selector-bar {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -386,7 +386,7 @@
   padding-right: 16px;
 }
 
-.zillow-ai-style-btn {
+.ai-makeover-style-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -400,11 +400,11 @@
   transition: all 0.2s ease;
 }
 
-.zillow-ai-style-btn:hover {
+.ai-makeover-style-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.zillow-ai-style-btn svg {
+.ai-makeover-style-btn svg {
   width: 24px;
   /* w-6 */
   height: 24px;
@@ -414,11 +414,11 @@
   transition: transform 0.2s ease;
 }
 
-.zillow-ai-style-btn:hover svg {
+.ai-makeover-style-btn:hover svg {
   transform: scale(1.1);
 }
 
-.zillow-ai-style-label {
+.ai-makeover-style-label {
   font-size: 10px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
@@ -428,7 +428,7 @@
   font-family: sans-serif;
 }
 
-.zillow-ai-close-selector-btn {
+.ai-makeover-close-selector-btn {
   position: absolute;
   right: -56px;
   /* -right-14 approx */
@@ -446,11 +446,11 @@
   justify-content: center;
 }
 
-.zillow-ai-close-selector-btn:hover {
+.ai-makeover-close-selector-btn:hover {
   background: rgba(255, 255, 255, 0.4);
 }
 
-@keyframes zillow-ai-zoom-in {
+@keyframes ai-makeover-zoom-in {
   from {
     opacity: 0;
     transform: scale(0.95);
@@ -463,7 +463,7 @@
 }
 
 /* Loading Spinner */
-.zillow-ai-spinner-container {
+.ai-makeover-spinner-container {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -474,23 +474,23 @@
   z-index: 10000;
 }
 
-.zillow-ai-spinner {
+.ai-makeover-spinner {
   width: 20px;
   height: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: white;
-  animation: zillow-ai-spin 1s linear infinite;
+  animation: ai-makeover-spin 1s linear infinite;
 }
 
-@keyframes zillow-ai-spin {
+@keyframes ai-makeover-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
 /* Error Overlay */
-.zillow-ai-error-overlay {
+.ai-makeover-error-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -502,10 +502,10 @@
   align-items: center;
   justify-content: center;
   z-index: 10001;
-  animation: zillow-ai-fade-in 0.3s ease-out;
+  animation: ai-makeover-fade-in 0.3s ease-out;
 }
 
-.zillow-ai-error-content {
+.ai-makeover-error-content {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -520,16 +520,16 @@
   align-items: center;
   gap: 20px;
   text-align: center;
-  animation: zillow-ai-slide-up 0.3s ease-out;
+  animation: ai-makeover-slide-up 0.3s ease-out;
 }
 
-.zillow-ai-error-header {
+.ai-makeover-error-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.zillow-ai-error-icon {
+.ai-makeover-error-icon {
   width: 48px;
   height: 48px;
   background: rgba(239, 68, 68, 0.15);
@@ -543,7 +543,7 @@
   flex-shrink: 0;
 }
 
-.zillow-ai-error-title {
+.ai-makeover-error-title {
   font-size: 28px;
   font-weight: 700;
   color: white;
@@ -552,7 +552,7 @@
   letter-spacing: -0.5px;
 }
 
-.zillow-ai-error-message {
+.ai-makeover-error-message {
   font-size: 15px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.6;
@@ -561,7 +561,7 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.zillow-ai-error-close-btn {
+.ai-makeover-error-close-btn {
   margin-top: 8px;
   padding: 14px 32px;
   background: rgba(255, 255, 255, 0.25);
@@ -578,18 +578,18 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.zillow-ai-error-close-btn:hover {
+.ai-makeover-error-close-btn:hover {
   background: rgba(255, 255, 255, 0.35);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.zillow-ai-error-close-btn:active {
+.ai-makeover-error-close-btn:active {
   transform: translateY(0);
 }
 
-@keyframes zillow-ai-fade-in {
+@keyframes ai-makeover-fade-in {
   from {
     opacity: 0;
   }
@@ -599,7 +599,7 @@
   }
 }
 
-@keyframes zillow-ai-slide-up {
+@keyframes ai-makeover-slide-up {
   from {
     opacity: 0;
     transform: translateY(20px) scale(0.95);

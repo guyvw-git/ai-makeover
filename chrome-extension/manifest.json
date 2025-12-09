@@ -1,9 +1,12 @@
 {
     "manifest_version": 3,
-    "name": "Zillow AI Makeover",
+    "name": "AI Makeover",
     "version": "1.0",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApC/6ynUi7btnPvdKh7r2mrvTJVzLvEalVOd1QHaKhXARdHvSN8rBLvF9exChq8FEASSk4gRSInG3XlrSlaoSLBoGbS/6OLEF1AAUKhFdQpS9eXaMY+/rgi/s5ay3FaO0leDBwXKMAAlnUKHhtrFH4BA1RozjaoyKQ2I8lcXZQ7KNXl7Mn8BRgrvWS+fu96shy+8Mz8+ovAtFx0j2SzeRMjE09QCA/keT4q2X1LElsfDSa3lOJm/0JVyJ1F67E6XgvUdT8rliawC1rjZMBP0t3ISKwZOh771zAXJY2nAPF+mMi1DmuUFnA0F9DpkbAlZmqiye8o10Ed3PrVUg2CKEIwIDAQAB",
     "description": "Add a Magic Wand to images on any site to give them an AI makeover.",
     "permissions": [
+        "storage",
+        "identity",
         "activeTab",
         "scripting"
     ],
@@ -17,6 +20,8 @@
                 "<all_urls>"
             ],
             "js": [
+                "config.js",
+                "auth.js",
                 "content.js"
             ],
             "css": [
@@ -27,11 +32,23 @@
     "background": {
         "service_worker": "background.js"
     },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "AI Makeover"
+    },
+    "oauth2": {
+        "client_id": "153178030687-hnc7q1ovdnn0jlfvkdmellktnnj4uh1i.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
+    },
     "web_accessible_resources": [
         {
             "resources": [
                 "styles.css",
-                "config.js"
+                "config.js",
+                "auth.js"
             ],
             "matches": [
                 "<all_urls>"

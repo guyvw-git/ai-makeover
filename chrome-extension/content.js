@@ -1,22 +1,15 @@
-// Zillow AI Makeover Content Script
+// AI Makeover Content Script
 
 // Load configuration
-let CONFIG = { API_BASE_URL: 'http://localhost:3000' }; // Default fallback
-try {
-    // Import config.js - it's loaded as a web accessible resource
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('config.js');
-    script.onload = () => {
-        if (typeof window.CONFIG !== 'undefined') {
-            CONFIG = window.CONFIG;
-        }
-    };
-    document.head.appendChild(script);
-} catch (e) {
-    console.warn('Failed to load config.js, using default localhost:3000');
+let CONFIG = window.AI_MAKEOVER_CONFIG || { API_BASE_URL: 'http://localhost:3000' };
+
+if (!window.AI_MAKEOVER_CONFIG) {
+    console.warn('window.AI_MAKEOVER_CONFIG was not found. Using default localhost:3000.');
 }
 
-console.log("Zillow AI Makeover Extension Loaded");
+console.log('AI Makeover Config:', CONFIG);
+
+console.log("AI Makeover Extension Loaded");
 
 // Helper to create elements
 function createElement(tag, className, innerHTML = '') {
@@ -27,7 +20,7 @@ function createElement(tag, className, innerHTML = '') {
 }
 
 // Icons
-const WAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="zillow-ai-wand-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.636-1.636L13.288 18.5l1.183-.394a2.25 2.25 0 001.636-1.636L16.5 15.25l.394 1.183a2.25 2.25 0 001.636 1.636l1.183.394-1.183.394a2.25 2.25 0 00-1.636 1.636z" /></svg>`;
+const WAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="ai-makeover-wand-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.636-1.636L13.288 18.5l1.183-.394a2.25 2.25 0 001.636-1.636L16.5 15.25l.394 1.183a2.25 2.25 0 001.636 1.636l1.183.394-1.183.394a2.25 2.25 0 00-1.636 1.636z" /></svg>`;
 const STYLE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" /></svg>`;
 const SEND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.636-1.636L13.288 18.5l1.183-.394a2.25 2.25 0 001.636-1.636L16.5 15.25l.394 1.183a2.25 2.25 0 001.636 1.636l1.183.394-1.183.394a2.25 2.25 0 00-1.636 1.636z" /></svg>`;
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
@@ -75,30 +68,62 @@ const DESIGN_STYLES = [
 // Process images
 function processImages() {
     // Avoid running on our own app
+    // Check if we should ignore this page
     try {
         const appUrl = new URL(CONFIG.API_BASE_URL);
+        const currentHostname = window.location.hostname;
+        const appHostname = appUrl.hostname;
+
+        // Check for exact match or localhost variations
+        const isLocalhost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+        const isSameHost = currentHostname === appHostname || (isLocalhost(currentHostname) && isLocalhost(appHostname));
+        const isSamePort = window.location.port === appUrl.port || (!window.location.port && !appUrl.port);
+
         if (
-            document.body.classList.contains('zillow-makeover-app') ||
-            (window.location.hostname === appUrl.hostname && window.location.port === appUrl.port) ||
-            document.querySelector('meta[name="zillow-ai-extension-ignore"]')
-        ) return;
+            document.body.classList.contains('ai-makeover-app') ||
+            document.querySelector('meta[name="ai-makeover-extension-ignore"]') ||
+            (isSameHost && isSamePort)
+        ) {
+            console.log('[AI Makeover] Ignoring this page (app detected)');
+            return;
+        }
     } catch (e) {
-        // If URL parsing fails, just check for the class and meta tag
+        console.warn('[AI Makeover] Error checking ignore rules:', e);
+        // Fallback: check for class and meta tag only
         if (
-            document.body.classList.contains('zillow-makeover-app') ||
-            document.querySelector('meta[name="zillow-ai-extension-ignore"]')
+            document.body && document.body.classList.contains('ai-makeover-app') ||
+            document.querySelector('meta[name="ai-makeover-extension-ignore"]')
         ) return;
     }
 
     const images = document.querySelectorAll('img');
-    images.forEach(img => {
+    images.forEach(async img => {
         // Skip if already processed or too small
-        if (img.dataset.zillowAiProcessed || img.width < 200 || img.height < 200) return;
+        if (img.dataset.aiMakeoverProcessed || img.width < 200 || img.height < 200) return;
 
-        // Mark as processed
-        img.dataset.zillowAiProcessed = 'true';
+        img.dataset.aiMakeoverProcessed = 'true';
 
-        const wrapper = createElement('div', 'zillow-ai-image-wrapper');
+        // Check if user is authenticated before showing magic wand
+        console.log('[AI Makeover] Checking auth for image:', img.src.substring(0, 50));
+        console.log('[AI Makeover] authManager defined?', typeof window.authManager !== 'undefined');
+
+        if (typeof window.authManager === 'undefined') {
+            console.log('[AI Makeover] Auth manager not loaded yet');
+            return;
+        }
+
+        const isAuth = await window.authManager.isAuthenticated();
+        console.log('[AI Makeover] Is authenticated?', isAuth);
+
+        if (!isAuth) {
+            // Don't show magic wand - user needs to sign in via popup first
+            console.log('[AI Makeover] User not authenticated. Please sign in via extension popup.');
+            return;
+        }
+
+        console.log('[AI Makeover] User is authenticated! Creating magic wand button...');
+
+        const wrapper = createElement('div', 'ai-makeover-image-wrapper');
         wrapper.style.position = 'relative';
         wrapper.style.display = 'inline-block';
 
@@ -106,7 +131,7 @@ function processImages() {
         wrapper.appendChild(img);
 
         // Add Magic Wand Button
-        const btn = createElement('div', 'zillow-ai-wand-btn', WAND_ICON);
+        const btn = createElement('div', 'ai-makeover-wand-btn', WAND_ICON);
         btn.title = "AI Makeover";
         wrapper.appendChild(btn);
 
@@ -124,18 +149,18 @@ function showMagicInput(wrapper, img, btn) {
     btn.style.display = 'none';
 
     // Container
-    const container = createElement('div', 'zillow-ai-magic-input-container text-mode');
+    const container = createElement('div', 'ai-makeover-magic-input-container text-mode');
     wrapper.appendChild(container);
 
     // Render Text Input Mode
     function renderTextInput() {
         container.innerHTML = '';
-        container.className = 'zillow-ai-magic-input-container text-mode';
+        container.className = 'ai-makeover-magic-input-container text-mode';
 
-        const inputWrapper = createElement('div', 'zillow-ai-input-wrapper');
+        const inputWrapper = createElement('div', 'ai-makeover-input-wrapper');
 
         // Style Toggle
-        const styleToggle = createElement('button', 'zillow-ai-style-toggle', STYLE_ICON);
+        const styleToggle = createElement('button', 'ai-makeover-style-toggle', STYLE_ICON);
         styleToggle.title = "Choose a Style";
         styleToggle.onclick = (e) => {
             e.stopPropagation();
@@ -143,7 +168,7 @@ function showMagicInput(wrapper, img, btn) {
         };
 
         // Input
-        const input = createElement('input', 'zillow-ai-text-input');
+        const input = createElement('input', 'ai-makeover-text-input');
         input.type = 'text';
         input.placeholder = 'Add to prompt...';
 
@@ -158,7 +183,7 @@ function showMagicInput(wrapper, img, btn) {
         };
 
         // Send Button
-        const sendBtn = createElement('button', 'zillow-ai-send-btn', SEND_ICON);
+        const sendBtn = createElement('button', 'ai-makeover-send-btn', SEND_ICON);
         sendBtn.onclick = (e) => {
             e.stopPropagation();
             handleGenerate(input.value);
@@ -176,22 +201,22 @@ function showMagicInput(wrapper, img, btn) {
     // Render Style Selector Mode
     function renderStyleSelector() {
         container.innerHTML = '';
-        container.className = 'zillow-ai-magic-input-container style-mode';
+        container.className = 'ai-makeover-magic-input-container style-mode';
 
-        const selector = createElement('div', 'zillow-ai-style-selector');
+        const selector = createElement('div', 'ai-makeover-style-selector');
 
         // Bar
-        const bar = createElement('div', 'zillow-ai-selector-bar');
+        const bar = createElement('div', 'ai-makeover-selector-bar');
 
         DESIGN_STYLES.forEach(style => {
-            const styleBtn = createElement('button', 'zillow-ai-style-btn');
+            const styleBtn = createElement('button', 'ai-makeover-style-btn');
             styleBtn.title = style.name;
             styleBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="${style.icon}" />
-                </svg>
-                <span class="zillow-ai-style-label">${style.name}</span>
-            `;
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white">
+        <path stroke-linecap="round" stroke-linejoin="round" d="${style.icon}" />
+    </svg>
+    <span class="ai-makeover-style-label">${style.name}</span>
+`;
             styleBtn.onclick = (e) => {
                 e.stopPropagation();
                 handleGenerate(null, style.extensivePrompt);
@@ -200,7 +225,7 @@ function showMagicInput(wrapper, img, btn) {
         });
 
         // Close Button
-        const closeBtn = createElement('button', 'zillow-ai-close-selector-btn', CLOSE_ICON);
+        const closeBtn = createElement('button', 'ai-makeover-close-selector-btn', CLOSE_ICON);
         closeBtn.title = "Back to Text Input";
         closeBtn.onclick = (e) => {
             e.stopPropagation();
@@ -217,10 +242,18 @@ function showMagicInput(wrapper, img, btn) {
         container.remove();
 
         // Add loading state to button instead of separate spinner
-        btn.classList.add('zillow-ai-loading');
+        btn.classList.add('ai-makeover-loading');
         btn.style.display = 'flex';
 
         try {
+            // Get auth token
+            const auth = await window.authManager.getAuth();
+
+            if (!auth || !auth.accessToken) {
+                showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+                return;
+            }
+
             const base64 = await fetchImageViaBackground(img.src);
 
             // Default prompt logic
@@ -235,12 +268,26 @@ function showMagicInput(wrapper, img, btn) {
 
             const response = await fetch(`${CONFIG.API_BASE_URL}/api/generate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.accessToken}`
+                },
                 body: JSON.stringify({
                     imageBase64: base64,
-                    prompt: finalPrompt
+                    prompt: finalPrompt,
+                    metadata: {
+                        userEmail: auth.email,
+                        sourceUrl: window.location.href
+                    }
                 })
             });
+
+            // Handle 401 Unauthorized (token expired/invalid)
+            if (response.status === 401) {
+                showError(wrapper, 'Session expired. Please sign in again via the extension popup.', btn);
+                await window.authManager.signOut(); // Clear invalid token
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
@@ -268,7 +315,7 @@ function showMagicInput(wrapper, img, btn) {
 
             showError(wrapper, errorMessage, btn);
         } finally {
-            btn.classList.remove('zillow-ai-loading');
+            btn.classList.remove('ai-makeover-loading');
         }
     }
 
@@ -292,7 +339,7 @@ function showMagicInput(wrapper, img, btn) {
 
 // Show Error Overlay
 function showError(wrapper, errorMessage, btn) {
-    const host = createElement('div', 'zillow-ai-shadow-host');
+    const host = createElement('div', 'ai-makeover-shadow-host');
     host.style.position = 'absolute';
     host.style.top = '0';
     host.style.left = '0';
@@ -312,26 +359,26 @@ function showError(wrapper, errorMessage, btn) {
     styleLink.setAttribute('href', chrome.runtime.getURL('styles.css'));
     shadow.appendChild(styleLink);
 
-    const errorOverlay = createElement('div', 'zillow-ai-error-overlay');
+    const errorOverlay = createElement('div', 'ai-makeover-error-overlay');
 
     errorOverlay.innerHTML = `
-        <div class="zillow-ai-error-content">
-            <div class="zillow-ai-error-header">
-                <div class="zillow-ai-error-icon">
+    <div class="ai-makeover-error-content">
+            <div class="ai-makeover-error-header">
+                <div class="ai-makeover-error-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 32px; height: 32px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
-                <div class="zillow-ai-error-title">Can't reach Server</div>
+                <div class="ai-makeover-error-title">Can't reach Server</div>
             </div>
-            <div class="zillow-ai-error-message">${errorMessage}</div>
-            <button class="zillow-ai-error-close-btn">Close</button>
+            <div class="ai-makeover-error-message">${errorMessage}</div>
+            <button class="ai-makeover-error-close-btn">Close</button>
         </div>
     `;
 
     shadow.appendChild(errorOverlay);
 
-    const closeBtn = errorOverlay.querySelector('.zillow-ai-error-close-btn');
+    const closeBtn = errorOverlay.querySelector('.ai-makeover-error-close-btn');
     closeBtn.addEventListener('click', () => {
         host.remove();
         // Show wand button again when error is dismissed
@@ -358,7 +405,7 @@ function fetchImageViaBackground(url) {
 
 // Show Comparison Overlay
 function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
-    const host = createElement('div', 'zillow-ai-shadow-host');
+    const host = createElement('div', 'ai-makeover-shadow-host');
     host.style.position = 'absolute';
     host.style.top = '0';
     host.style.left = '0';
@@ -378,31 +425,31 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
     styleLink.setAttribute('href', chrome.runtime.getURL('styles.css'));
     shadow.appendChild(styleLink);
 
-    const overlay = createElement('div', 'zillow-ai-overlay');
+    const overlay = createElement('div', 'ai-makeover-overlay');
 
     overlay.innerHTML = `
-        <img src="${originalUrl}" class="zillow-ai-img-original">
-        <img src="${aiUrl}" class="zillow-ai-img-ai zillow-ai-overlay-ai" style="opacity: 1">
-        
-        <div class="zillow-ai-label zillow-ai-label-original">Original</div>
-        <div class="zillow-ai-label zillow-ai-label-ai">AI Makeover</div>
+    <img src="${originalUrl}" class="ai-makeover-img-original">
+        <img src="${aiUrl}" class="ai-makeover-img-ai ai-makeover-overlay-ai" style="opacity: 1">
 
-        <div class="zillow-ai-slider-container">
-            <span class="zillow-ai-slider-label">Original</span>
-            <input type="range" min="0" max="100" value="100" class="zillow-ai-range">
-            <span class="zillow-ai-slider-label ai">AI</span>
-            <button class="zillow-ai-close-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-        </div>
-    `;
+            <div class="ai-makeover-label ai-makeover-label-original">Original</div>
+            <div class="ai-makeover-label ai-makeover-label-ai">AI Makeover</div>
+
+            <div class="ai-makeover-slider-container">
+                <span class="ai-makeover-slider-label">Original</span>
+                <input type="range" min="0" max="100" value="100" class="ai-makeover-range">
+                    <span class="ai-makeover-slider-label ai">AI</span>
+                    <button class="ai-makeover-close-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+            </div>
+            `;
 
     shadow.appendChild(overlay);
 
-    const slider = overlay.querySelector('.zillow-ai-range');
-    const aiImg = overlay.querySelector('.zillow-ai-overlay-ai');
-    const aiLabel = overlay.querySelector('.zillow-ai-label-ai');
-    const closeBtn = overlay.querySelector('.zillow-ai-close-btn');
+    const slider = overlay.querySelector('.ai-makeover-range');
+    const aiImg = overlay.querySelector('.ai-makeover-overlay-ai');
+    const aiLabel = overlay.querySelector('.ai-makeover-label-ai');
+    const closeBtn = overlay.querySelector('.ai-makeover-close-btn');
 
     slider.addEventListener('input', (e) => {
         const val = e.target.value;
@@ -418,7 +465,7 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
     closeBtn.addEventListener('click', () => {
         host.remove();
         // Show wand button again when overlay is closed
-        const btn = wrapper.querySelector('.zillow-ai-wand-btn');
+        const btn = wrapper.querySelector('.ai-makeover-wand-btn');
         if (btn) btn.style.display = 'flex';
     });
 }
