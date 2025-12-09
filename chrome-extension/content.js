@@ -216,9 +216,9 @@ function showMagicInput(wrapper, img, btn) {
     async function handleGenerate(magicPrompt, overridePrompt = null) {
         container.remove();
 
-        // Show loading
-        const spinner = createElement('div', 'zillow-ai-spinner-container', '<div class="zillow-ai-spinner"></div>');
-        wrapper.appendChild(spinner);
+        // Add loading state to button instead of separate spinner
+        btn.classList.add('zillow-ai-loading');
+        btn.style.display = 'flex';
 
         try {
             const base64 = await fetchImageViaBackground(img.src);
@@ -268,7 +268,7 @@ function showMagicInput(wrapper, img, btn) {
 
             showError(wrapper, errorMessage, btn);
         } finally {
-            spinner.remove();
+            btn.classList.remove('zillow-ai-loading');
         }
     }
 
@@ -386,15 +386,14 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
         
         <div class="zillow-ai-label zillow-ai-label-original">Original</div>
         <div class="zillow-ai-label zillow-ai-label-ai">AI Makeover</div>
-        
-        <button class="zillow-ai-close-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
 
         <div class="zillow-ai-slider-container">
             <span class="zillow-ai-slider-label">Original</span>
             <input type="range" min="0" max="100" value="100" class="zillow-ai-range">
             <span class="zillow-ai-slider-label ai">AI</span>
+            <button class="zillow-ai-close-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
         </div>
     `;
 

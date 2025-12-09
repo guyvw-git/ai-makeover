@@ -33,9 +33,42 @@
 .zillow-ai-wand-icon {
   width: 24px;
   height: 24px;
-  stroke: white;
-  stroke-width: 2;
-  fill: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+/* Animate the wand icon during loading */
+.zillow-ai-loading .zillow-ai-wand-icon {
+  animation: zillow-ai-sparkle-pulse 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8));
+}
+
+@keyframes zillow-ai-sparkle-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8)) brightness(1);
+  }
+
+  25% {
+    opacity: 0.7;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(249, 115, 22, 1)) brightness(1.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.8)) brightness(1);
+  }
+
+  75% {
+    opacity: 0.8;
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.9)) brightness(1.2);
+  }
 }
 
 /* Overlay Container */
@@ -141,25 +174,77 @@
 
 /* Close Button */
 .zillow-ai-close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1f2937;
-  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10001;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.zillow-ai-close-btn svg {
+  color: white;
 }
 
 .zillow-ai-close-btn:hover {
-  background: white;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Loading state for wand button */
+.zillow-ai-wand-btn.zillow-ai-loading {
+  animation: zillow-ai-spin-outline 2s linear infinite;
+  pointer-events: none;
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+@keyframes zillow-ai-spin-outline {
+  0% {
+    box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0.8),
+      4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 0 2px rgba(249, 115, 22, 0),
+      -4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  25% {
+    box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0),
+      4px 0 0 2px rgba(249, 115, 22, 0.8),
+      0 4px 0 2px rgba(249, 115, 22, 0),
+      -4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0),
+      4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 0 2px rgba(249, 115, 22, 0.8),
+      -4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  75% {
+    box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0),
+      4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 0 2px rgba(249, 115, 22, 0),
+      -4px 0 0 2px rgba(249, 115, 22, 0.8),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  100% {
+    box-shadow: 0 -4px 0 2px rgba(249, 115, 22, 0.8),
+      4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 0 2px rgba(249, 115, 22, 0),
+      -4px 0 0 2px rgba(249, 115, 22, 0),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* Magic Input Container */
