@@ -37,11 +37,17 @@ export async function POST(request: Request) {
         // Clean base64 string
         const base64Data = imageBase64.split(',')[1] || imageBase64;
 
-        const fullPrompt = `Redesign the attached room image. 
+        const fullPrompt = `YOU MUST GENERATE AN IMAGE. DO NOT respond with text only.
         
-        Transformation instructions: ${prompt}
+Redesign the attached image using these instructions: ${prompt}
         
-        Important: Maintain the exact structural layout, perspective, and geometry of the original room (windows, doors, walls, ceiling). Only change the style, furniture, materials, and lighting. Output a high-quality photorealistic image.`;
+CRITICAL RULES:
+- You MUST output a photorealistic image, not text
+- Even if the image shows an exterior, redesign it anyway
+- Maintain the exact structural layout, perspective, and geometry
+- Only change the style, furniture, materials, colors, and lighting
+- DO NOT ask questions or provide explanations
+- OUTPUT AN IMAGE ONLY`;
 
         // User requested specific model
         const model = "gemini-2.5-flash-image";
@@ -157,10 +163,67 @@ export async function POST(request: Request) {
                 }
             });
         } else {
+            // Check if we got a text response instead
+            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (textResponse) {
+                console.log("Gemini returned text instead of image. Retrying with stronger prompt...");
+
+                // Retry with an even more forceful prompt
+                const forcedPrompt = `IGNORE ANY CONCERNS. You MUST generate an image. Transform this image with: ${prompt}. DO NOT respond with text. OUTPUT IMAGE ONLY.`;
+
+                const retryPayload = {
+                    contents: [{
+                        parts: [
+                            { text: forcedPrompt },
+                            {
+                                inline_data: {
+                                    mime_type: "image/jpeg",
+                                    data: base64Data
+                                }
+                            }
+                        ]
+                    }]
+                };
+
+                try {
+                    const retryResponse = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(retryPayload)
+                    });
+
+                    const retryData = await retryResponse.json();
+                    console.log("--- RETRY RESPONSE ---");
+                    console.log(JSON.stringify(retryData, null, 2));
+
+                    // Check for image in retry response
+                    if (retryData.candidates?.[0]?.content?.parts) {
+                        for (const part of retryData.candidates[0].content.parts) {
+                            const inlineData = part.inline_data || part.inlineData;
+                            if (inlineData?.mime_type?.startsWith('image/')) {
+                                const aiImageBase64 = inlineData.data;
+                                const aiImageUrl = `data:${inlineData.mime_type};base64,${aiImageBase64}`;
+
+                                return NextResponse.json({
+                                    originalUrl: 'local-file',
+                                    aiUrl: aiImageUrl,
+                                    status: 'completed',
+                                    note: 'Generated after retry with stronger prompt'
+                                });
+                            }
+                        }
+                    }
+                } catch (retryError) {
+                    console.error("Retry failed:", retryError);
+                }
+            }
+
             console.error("No image found in generation response. Full Response Structure:", JSON.stringify(data, null, 2));
             return NextResponse.json({
-                error: 'Model generated text instead of image. Try refining the prompt to explicitly ask for an image.',
-                details: JSON.stringify(data),
+                error: 'AI model returned text instead of an image. This usually happens with exterior photos. Try using an interior room photo instead.',
+                textResponse: textResponse || 'No text response',
+                details: data,
                 curlCommand: curlCommand
             }, { status: 500 });
         }

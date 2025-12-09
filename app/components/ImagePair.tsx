@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+import { DESIGN_STYLES, DesignStyle } from '../data/styles';
 
 interface ImagePairProps {
     originalUrl: string;
@@ -14,10 +16,29 @@ interface ImagePairProps {
 
 export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating, curlCommand, prompt, onPromptChange }: ImagePairProps) {
     const [isComparing, setIsComparing] = useState(false);
-    const [opacity, setOpacity] = useState(50);
+    const [opacity, setOpacity] = useState(85);
     const [waitingForAutoCompare, setWaitingForAutoCompare] = useState(false);
     const [showMagicInput, setShowMagicInput] = useState(false);
     const [magicPrompt, setMagicPrompt] = useState('');
+    const [showStyleSelector, setShowStyleSelector] = useState(false);
+    const magicInputRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (magicInputRef.current && !magicInputRef.current.contains(event.target as Node)) {
+                setShowMagicInput(false);
+                setShowStyleSelector(false); // Also reset style selector state
+            }
+        }
+
+        if (showMagicInput) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showMagicInput]);
 
     useEffect(() => {
         if (aiUrl && waitingForAutoCompare) {
@@ -45,6 +66,17 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
         setWaitingForAutoCompare(true);
         setShowMagicInput(false);
         setMagicPrompt('');
+        onGenerate();
+    };
+
+    const handleStyleSelect = (style: DesignStyle) => {
+        // Override the prompt with the extensive style prompt
+        onPromptChange(style.extensivePrompt);
+
+        // Trigger generation immediately
+        setWaitingForAutoCompare(true);
+        setShowMagicInput(false);
+        setShowStyleSelector(false);
         onGenerate();
     };
 
@@ -124,26 +156,76 @@ export default function ImagePair({ originalUrl, onGenerate, aiUrl, isGenerating
 
                         {/* Magic Input Field */}
                         {showMagicInput && (
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 max-w-xs">
-                                <div className="relative flex items-center">
-                                    <input
-                                        type="text"
-                                        value={magicPrompt}
-                                        onChange={(e) => setMagicPrompt(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleMagicSend()}
-                                        autoFocus
-                                        className="w-full px-4 py-3 pr-12 bg-white/20 backdrop-blur-md border border-white/50 rounded-full text-[#404040] placeholder-white/70 outline-none focus:bg-white/30 transition-all shadow-lg"
-                                        placeholder="Add to prompt..."
-                                    />
-                                    <button
-                                        onClick={handleMagicSend}
-                                        className="absolute right-2 p-1.5 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                        </svg>
-                                    </button>
-                                </div>
+                            <div
+                                ref={magicInputRef}
+                                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${showStyleSelector ? 'w-auto' : 'w-3/4 max-w-md'}`}
+                            >
+                                {!showStyleSelector ? (
+                                    // Text Input Mode
+                                    <div className="relative flex items-center w-full">
+                                        {/* Style Selector Button */}
+                                        <button
+                                            onClick={() => setShowStyleSelector(true)}
+                                            className="absolute left-2 p-1.5 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all z-10"
+                                            title="Choose a Style"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+                                            </svg>
+                                        </button>
+
+                                        <input
+                                            type="text"
+                                            value={magicPrompt}
+                                            onChange={(e) => setMagicPrompt(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleMagicSend()}
+                                            autoFocus
+                                            className="w-full px-4 py-3 pl-12 pr-12 bg-white/20 backdrop-blur-md border border-white/50 rounded-full text-[#404040] placeholder-white/70 outline-none focus:bg-white/30 transition-all shadow-lg min-w-[300px]"
+                                            placeholder="Add to prompt..."
+                                        />
+                                        <button
+                                            onClick={handleMagicSend}
+                                            className="absolute right-2 p-1.5 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    // Style Selector Mode
+                                    <div className="relative flex items-center justify-center animate-in fade-in zoom-in duration-200">
+                                        {/* Main Selector Bar */}
+                                        <div className="bg-white/20 backdrop-blur-md border border-white/50 rounded-2xl p-2 shadow-lg">
+                                            <div className="flex items-center gap-4 px-2">
+                                                {DESIGN_STYLES.map((style) => (
+                                                    <button
+                                                        key={style.id}
+                                                        onClick={() => handleStyleSelect(style)}
+                                                        className="group flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded-xl transition-all"
+                                                        title={style.name}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-6 h-6 group-hover:scale-110 transition-transform">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d={style.icon} />
+                                                        </svg>
+                                                        <span className="text-[10px] font-medium text-white/90 tracking-wide shadow-sm">{style.name}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Separated Close Button - Absolute Positioned */}
+                                        <button
+                                            onClick={() => setShowStyleSelector(false)}
+                                            className="absolute -right-14 p-2.5 bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/50 rounded-full text-white shadow-lg transition-all"
+                                            title="Back to Text Input"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
 
