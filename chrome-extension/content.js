@@ -411,6 +411,11 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
         aiLabel.style.opacity = val / 100;
     });
 
+    // Initialize slider position and opacity to 100%
+    slider.value = 100;
+    aiImg.style.opacity = 1;
+    aiLabel.style.opacity = 1;
+
     closeBtn.addEventListener('click', () => {
         host.remove();
         // Show wand button again when overlay is closed
