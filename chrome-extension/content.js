@@ -124,11 +124,24 @@ function processImages() {
         console.log('[AI Makeover] User is authenticated! Creating magic wand button...');
 
         const wrapper = createElement('div', 'ai-makeover-image-wrapper');
+
+        // Preserve the original image's display context
+        const computedStyle = window.getComputedStyle(img);
+        const imgDisplay = computedStyle.display;
+
         wrapper.style.position = 'relative';
-        wrapper.style.display = 'inline-block';
+        wrapper.style.display = imgDisplay === 'block' ? 'block' : 'inline-block';
+        wrapper.style.width = img.width + 'px';
+        wrapper.style.height = img.height + 'px';
+        wrapper.style.isolation = 'isolate'; // Create new stacking context
 
         img.parentNode.insertBefore(wrapper, img);
         wrapper.appendChild(img);
+
+        // Ensure image fills wrapper
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.display = 'block';
 
         // Add Magic Wand Button
         const btn = createElement('div', 'ai-makeover-wand-btn', WAND_ICON);
@@ -148,9 +161,32 @@ function processImages() {
 function showMagicInput(wrapper, img, btn) {
     btn.style.display = 'none';
 
+    // Create shadow host for style isolation
+    const shadowHost = createElement('div', 'ai-makeover-shadow-host');
+    shadowHost.style.position = 'absolute';
+    shadowHost.style.top = '0';
+    shadowHost.style.left = '0';
+    shadowHost.style.width = '100%';
+    shadowHost.style.height = '100%';
+    shadowHost.style.zIndex = '10000';
+
+    // Stop event propagation
+    ['click', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(evt => {
+        shadowHost.addEventListener(evt, (e) => e.stopPropagation());
+    });
+
+    wrapper.appendChild(shadowHost);
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+
+    // Load styles into shadow DOM
+    const styleLink = document.createElement('link');
+    styleLink.setAttribute('rel', 'stylesheet');
+    styleLink.setAttribute('href', chrome.runtime.getURL('styles.css'));
+    shadow.appendChild(styleLink);
+
     // Container
     const container = createElement('div', 'ai-makeover-magic-input-container text-mode');
-    wrapper.appendChild(container);
+    shadow.appendChild(container);
 
     // Render Text Input Mode
     function renderTextInput() {
@@ -239,7 +275,7 @@ function showMagicInput(wrapper, img, btn) {
 
     // Handle Generation
     async function handleGenerate(magicPrompt, overridePrompt = null) {
-        container.remove();
+        shadowHost.remove();
 
         // Add loading state to button instead of separate spinner
         btn.classList.add('ai-makeover-loading');
@@ -321,8 +357,8 @@ function showMagicInput(wrapper, img, btn) {
 
     // Click Outside Listener
     function handleClickOutside(e) {
-        if (!container.contains(e.target) && !btn.contains(e.target)) {
-            container.remove();
+        if (!shadowHost.contains(e.target) && !btn.contains(e.target)) {
+            shadowHost.remove();
             btn.style.display = 'flex';
             document.removeEventListener('mousedown', handleClickOutside);
         }
