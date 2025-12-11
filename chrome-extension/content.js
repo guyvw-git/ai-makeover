@@ -24,6 +24,8 @@ const WAND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="
 const STYLE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" /></svg>`;
 const SEND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.636-1.636L13.288 18.5l1.183-.394a2.25 2.25 0 001.636-1.636L16.5 15.25l.394 1.183a2.25 2.25 0 001.636 1.636l1.183.394-1.183.394a2.25 2.25 0 00-1.636 1.636z" /></svg>`;
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
+// CUSTOM ICON (Pencil/Edit)
+const CUSTOM_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>`;
 
 // Style Data
 const DESIGN_STYLES = [
@@ -148,13 +150,183 @@ function processImages() {
         btn.title = "AI Makeover";
         wrapper.appendChild(btn);
 
-        // Handle Wand Click
+        // Handle Wand Click - Show Radial Menu
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            showMagicInput(wrapper, img, btn);
+            showRadialMenu(wrapper, img, btn);
         });
     });
+}
+
+// Show Radial Menu with Style Options
+function showRadialMenu(wrapper, img, btn) {
+    // Hide the magic wand button
+    btn.style.display = 'none';
+
+    // Create shadow host for style isolation
+    const shadowHost = createElement('div', 'ai-makeover-shadow-host');
+    shadowHost.style.position = 'absolute';
+    shadowHost.style.top = '0';
+    shadowHost.style.left = '0';
+    shadowHost.style.width = '100%';
+    shadowHost.style.height = '100%';
+    shadowHost.style.zIndex = '10000';
+
+    // Stop event propagation
+    ['click', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(evt => {
+        shadowHost.addEventListener(evt, (e) => e.stopPropagation());
+    });
+
+    wrapper.appendChild(shadowHost);
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+
+    // Load styles into shadow DOM
+    const styleLink = document.createElement('link');
+    styleLink.setAttribute('rel', 'stylesheet');
+    styleLink.setAttribute('href', chrome.runtime.getURL('styles.css'));
+    shadow.appendChild(styleLink);
+
+    // Create radial menu container
+    const radialMenu = createElement('div', 'ai-makeover-radial-menu');
+    shadow.appendChild(radialMenu);
+
+    // Add all styles + custom prompt option
+    const items = [
+        ...DESIGN_STYLES.map(s => ({ type: 'style', ...s })),
+        { type: 'custom', name: 'Custom Prompt', icon: CUSTOM_ICON, id: 'custom' }
+    ];
+
+    const radius = 80; // Distance from center
+    const totalItems = items.length;
+    const startAngle = -90; // Start at top
+
+    items.forEach((item, index) => {
+        const itemBtn = createElement('div', 'ai-makeover-radial-item');
+        itemBtn.dataset.title = item.name;
+
+        // Render icon
+        if (item.type === 'custom') {
+            itemBtn.innerHTML = item.icon; // Already full SVG
+            itemBtn.classList.add('custom-prompt');
+        } else {
+            // Create SVG from path
+            itemBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="${item.icon}" />
+                </svg>`;
+        }
+
+        // Calculate position in circle
+        const angleDeg = startAngle + (index * (360 / totalItems));
+        const angleRad = angleDeg * (Math.PI / 180);
+        const x = radius * Math.cos(angleRad);
+        const y = radius * Math.sin(angleRad);
+
+        itemBtn.style.left = `calc(50% + ${x}px)`;
+        itemBtn.style.top = `calc(50% + ${y}px)`;
+
+        // Click handler
+        itemBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (item.type === 'custom') {
+                // Show custom prompt input
+                shadowHost.remove();
+                showMagicInput(wrapper, img, btn);
+            } else {
+                // Trigger generation with this style
+                shadowHost.remove();
+                handleGenerateWithStyle(wrapper, img, btn, item.extensivePrompt);
+            }
+        });
+
+        radialMenu.appendChild(itemBtn);
+    });
+
+    // Click outside to close
+    function handleClickOutside(e) {
+        if (!shadowHost.contains(e.target)) {
+            shadowHost.remove();
+            btn.style.display = 'flex';
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }
+    setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+}
+
+// Handle generation with a selected style
+async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
+    // Show loading state
+    btn.classList.add('ai-makeover-loading');
+    btn.style.display = 'flex';
+
+    try {
+        // Get auth token
+        const auth = await window.authManager.getAuth();
+
+        if (!auth || !auth.accessToken) {
+            showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+            return;
+        }
+
+        const base64 = await fetchImageViaBackground(img.src);
+
+        // Use the style's extensive prompt
+        const finalPrompt = "Redesign this room. " + stylePrompt;
+
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${auth.accessToken}`
+            },
+            body: JSON.stringify({
+                imageBase64: base64,
+                prompt: finalPrompt,
+                metadata: {
+                    userEmail: auth.email,
+                    sourceUrl: window.location.href
+                }
+            })
+        });
+
+        if (response.status === 401) {
+            showError(wrapper, 'Session expired. Please sign in again via the extension popup.', btn);
+            await window.authManager.signOut();
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.aiUrl) {
+            showComparisonOverlay(wrapper, img.src, data.aiUrl);
+        } else {
+            showError(wrapper, 'AI Generation Failed: ' + (data.error || 'Unknown error'), btn);
+        }
+
+    } catch (err) {
+        console.error('AI Makeover Error:', err);
+        let errorMessage = 'Error generating AI makeover';
+
+        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+            errorMessage = `Cannot connect to server at ${CONFIG.API_BASE_URL}. Please ensure the server is running.`;
+        } else if (err.message.includes('Server error')) {
+            errorMessage = err.message;
+        } else {
+            errorMessage = err.message || 'Unknown error occurred';
+        }
+
+        showError(wrapper, errorMessage, btn);
+    } finally {
+        btn.classList.remove('ai-makeover-loading');
+        btn.style.display = 'none';
+    }
 }
 
 // Show Magic Input UI
