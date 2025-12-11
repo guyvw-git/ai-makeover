@@ -191,13 +191,18 @@ function showRadialMenu(wrapper, img, btn) {
     const radialMenu = createElement('div', 'ai-makeover-radial-menu');
     shadow.appendChild(radialMenu);
 
+    // Add center label for hover feedback
+    const centerLabel = createElement('div', 'ai-makeover-radial-center-label');
+    centerLabel.textContent = 'Choose a style';
+    radialMenu.appendChild(centerLabel);
+
     // Add all styles + custom prompt option
     const items = [
         ...DESIGN_STYLES.map(s => ({ type: 'style', ...s })),
-        { type: 'custom', name: 'Custom Prompt', icon: CUSTOM_ICON, id: 'custom' }
+        { type: 'custom', name: 'My Prompt', icon: CUSTOM_ICON, id: 'custom' }
     ];
 
-    const radius = 80; // Distance from center
+    const radius = 100; // Distance from center
     const totalItems = items.length;
     const startAngle = -90; // Start at top
 
@@ -223,8 +228,21 @@ function showRadialMenu(wrapper, img, btn) {
         const x = radius * Math.cos(angleRad);
         const y = radius * Math.sin(angleRad);
 
-        itemBtn.style.left = `calc(50% + ${x}px)`;
-        itemBtn.style.top = `calc(50% + ${y}px)`;
+        // Position at center initially, CSS animation will move them outward
+        itemBtn.style.left = '50%';
+        itemBtn.style.top = '50%';
+        itemBtn.style.setProperty('--target-x', `${x}px`);
+        itemBtn.style.setProperty('--target-y', `${y}px`);
+
+        // Hover handlers for center label
+        itemBtn.addEventListener('mouseenter', () => {
+            centerLabel.textContent = item.name;
+            centerLabel.classList.add('visible');
+        });
+
+        itemBtn.addEventListener('mouseleave', () => {
+            centerLabel.classList.remove('visible');
+        });
 
         // Click handler
         itemBtn.addEventListener('click', (e) => {
@@ -243,11 +261,17 @@ function showRadialMenu(wrapper, img, btn) {
         radialMenu.appendChild(itemBtn);
     });
 
-    // Click outside to close
+    // Click outside to close with fade animation
     function handleClickOutside(e) {
-        if (!shadowHost.contains(e.target)) {
-            shadowHost.remove();
-            btn.style.display = 'flex';
+        // Close if clicking outside shadowHost or on the image/wrapper itself
+        if (!shadowHost.contains(e.target) || wrapper.contains(e.target)) {
+            // Fade out animation
+            shadowHost.style.transition = 'opacity 0.2s ease-out';
+            shadowHost.style.opacity = '0';
+            setTimeout(() => {
+                shadowHost.remove();
+                btn.style.display = 'flex';
+            }, 200);
             document.removeEventListener('mousedown', handleClickOutside);
         }
     }
@@ -367,18 +391,10 @@ function showMagicInput(wrapper, img, btn) {
 
         const inputWrapper = createElement('div', 'ai-makeover-input-wrapper');
 
-        // Style Toggle
-        const styleToggle = createElement('button', 'ai-makeover-style-toggle', STYLE_ICON);
-        styleToggle.title = "Choose a Style";
-        styleToggle.onclick = (e) => {
-            e.stopPropagation();
-            renderStyleSelector();
-        };
-
         // Input
         const input = createElement('input', 'ai-makeover-text-input');
         input.type = 'text';
-        input.placeholder = 'Add to prompt...';
+        input.placeholder = 'Describe your dream room...';
 
         // Aggressively stop propagation to prevent host site from stealing focus
         ['click', 'mousedown', 'mouseup', 'keydown', 'keyup', 'keypress'].forEach(evt => {
@@ -397,9 +413,18 @@ function showMagicInput(wrapper, img, btn) {
             handleGenerate(input.value);
         };
 
-        inputWrapper.appendChild(styleToggle);
+        // Close Button - Returns to radial menu
+        const closeBtn = createElement('button', 'ai-makeover-close-input-btn', CLOSE_ICON);
+        closeBtn.title = 'Back to menu';
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            shadowHost.remove();
+            showRadialMenu(wrapper, img, btn);
+        };
+
         inputWrapper.appendChild(input);
         inputWrapper.appendChild(sendBtn);
+        inputWrapper.appendChild(closeBtn);
         container.appendChild(inputWrapper);
 
         // Auto-focus
