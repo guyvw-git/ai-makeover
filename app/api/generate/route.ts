@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { verifyGoogleToken } from '../verify-token';
 import { logRequest } from '../../lib/logger';
 
 export async function POST(request: Request) {
+    // Generate UUID for this request
+    const requestId = randomUUID();
+
     // Extract and verify auth token
     const authHeader = request.headers.get('authorization');
 
@@ -19,7 +23,7 @@ export async function POST(request: Request) {
     try {
         const userInfo = await verifyGoogleToken(token);
         userEmail = userInfo.email;
-        console.log(`Image generation request from user: ${userEmail}`);
+        console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
     } catch (error) {
         console.error('Token verification failed:', error);
         return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
@@ -29,14 +33,14 @@ export async function POST(request: Request) {
     const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
 
     if (!imageBase64 || !prompt) {
-        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'Missing image or prompt' });
+        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'Missing image or prompt' });
         return NextResponse.json({ error: 'Image data and prompt are required' }, { status: 400 });
     }
 
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         console.error('GOOGLE_API_KEY is missing');
-        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'Server config error' });
+        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'Server config error' });
         return NextResponse.json({ error: 'Server configuration error: API key missing' }, { status: 500 });
     }
 
@@ -159,26 +163,56 @@ CRITICAL RULES:
             const aiImageMimeType = inlineData.mime_type || inlineData.mimeType;
             const aiImageUrl = `data:${aiImageMimeType};base64,${aiImageBase64}`;
 
-            // Auto-save logic
-            if (folderPath && fileName) {
+            // Persist images asynchronously (fire-and-forget, don't block response)
+            const generatedImagesDir = path.join(process.cwd(), 'generated-images');
+            const extension = aiImageMimeType.includes('png') ? 'png' : 'jpg';
+
+            // Fire-and-forget async image persistence
+            (async () => {
                 try {
-                    const buffer = Buffer.from(aiImageBase64, 'base64');
-                    const outputFileName = `render_${fileName}`;
-                    const outputPath = path.join(folderPath, outputFileName);
-                    fs.writeFileSync(outputPath, buffer);
-                    console.log(`Saved generated image to: ${outputPath}`);
+                    // Ensure directory exists
+                    await fs.promises.mkdir(generatedImagesDir, { recursive: true });
+
+                    // Prepare buffers
+                    const originalImageBuffer = Buffer.from(base64Data, 'base64');
+                    const aiImageBuffer = Buffer.from(aiImageBase64, 'base64');
+
+                    // Save both images in parallel
+                    const originalImagePath = path.join(generatedImagesDir, `OG_${requestId}.${extension}`);
+                    const aiImagePath = path.join(generatedImagesDir, `AI_${requestId}.${extension}`);
+
+                    await Promise.all([
+                        fs.promises.writeFile(originalImagePath, originalImageBuffer),
+                        fs.promises.writeFile(aiImagePath, aiImageBuffer)
+                    ]);
+
+                    console.log(`[${requestId}] Saved original image to: ${originalImagePath}`);
+                    console.log(`[${requestId}] Saved AI-generated image to: ${aiImagePath}`);
+
+                    // Optional: Also save to user-specified folder if provided
+                    if (folderPath && fileName) {
+                        try {
+                            const outputFileName = `render_${fileName}`;
+                            const outputPath = path.join(folderPath, outputFileName);
+                            await fs.promises.writeFile(outputPath, aiImageBuffer);
+                            console.log(`[${requestId}] Also saved to user folder: ${outputPath}`);
+                        } catch (userFolderError) {
+                            console.error(`[${requestId}] Failed to save to user folder:`, userFolderError);
+                        }
+                    }
                 } catch (saveError) {
-                    console.error("Failed to save image to disk:", saveError);
-                    // Don't fail the request, just log the error
+                    console.error(`[${requestId}] Failed to save images to disk:`, saveError);
                 }
-            }
+            })(); // Immediately invoke, don't await
 
-            logRequest({ userEmail, sourceUrl, status: 'SUCCESS' });
+            logRequest({ requestId, userEmail, sourceUrl, status: 'SUCCESS' });
 
+            // Return response immediately without waiting for file writes
             return NextResponse.json({
                 originalUrl: 'local-file',
                 aiUrl: aiImageUrl,
                 status: 'completed',
+                requestId: requestId,
                 curlCommand: curlCommand,
                 debug: {
                     prompt: fullPrompt
@@ -227,7 +261,7 @@ CRITICAL RULES:
                                 const aiImageBase64 = inlineData.data;
                                 const aiImageUrl = `data:${inlineData.mime_type};base64,${aiImageBase64}`;
 
-                                logRequest({ userEmail, sourceUrl, status: 'SUCCESS (RETRY)' });
+                                logRequest({ requestId, userEmail, sourceUrl, status: 'SUCCESS (RETRY)' });
 
                                 return NextResponse.json({
                                     originalUrl: 'local-file',
@@ -244,7 +278,7 @@ CRITICAL RULES:
             }
 
             console.error("No image found in generation response. Full Response Structure:", JSON.stringify(data, null, 2));
-            logRequest({ userEmail, sourceUrl, status: 'FAILED', error: 'No image returned (Text response: ' + (textResponse ? 'Yes' : 'No') + ')' });
+            logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'No image returned (Text response: ' + (textResponse ? 'Yes' : 'No') + ')' });
 
             return NextResponse.json({
                 error: 'AI model returned text instead of an image. This usually happens with exterior photos. Try using an interior room photo instead.',
@@ -256,7 +290,7 @@ CRITICAL RULES:
 
     } catch (error: any) {
         console.error("Gemini API Error:", error);
-        logRequest({ userEmail, sourceUrl, status: 'FAILED', error: error.message || 'Unknown error' });
+        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: error.message || 'Unknown error' });
 
         const status = error.status === 429 ? 429 : 500;
         const message = error.status === 429 ? 'Rate limit exceeded. Please try again in a moment.' : 'Failed to process image with AI';

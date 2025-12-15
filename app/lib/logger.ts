@@ -1,30 +1,36 @@
 import fs from 'fs';
 import path from 'path';
+import { randomUUID } from 'crypto';
 
-// Logger utility to append logs to a file
+// Logger utility to append logs to a file (async, non-blocking)
 export function logRequest(data: {
+    requestId?: string; // Optional - will be generated if not provided
     userEmail: string;
     sourceUrl: string;
     originalUrl?: string;
     status: string;
     error?: string;
-}) {
+}): string {
+    // Generate UUID if not provided
+    const requestId = data.requestId || randomUUID();
     const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] User: ${data.userEmail} | Source: ${data.sourceUrl} | Status: ${data.status}${data.error ? ` | Error: ${data.error}` : ''}\n`;
+    const logEntry = `[${timestamp}] RequestID: ${requestId} | User: ${data.userEmail} | Source: ${data.sourceUrl} | Status: ${data.status}${data.error ? ` | Error: ${data.error}` : ''}\n`;
 
     const logDir = path.join(process.cwd(), 'logs');
     const logFile = path.join(logDir, 'requests.log');
 
-    try {
-        // Ensure directory exists (async check/create is safer but sync is fine here for simplicity/low volume)
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true });
-        }
+    // Fire-and-forget async logging (don't block caller)
+    (async () => {
+        try {
+            // Ensure directory exists
+            await fs.promises.mkdir(logDir, { recursive: true });
 
-        fs.appendFile(logFile, logEntry, (err) => {
-            if (err) console.error('Failed to write to log file:', err);
-        });
-    } catch (error) {
-        console.error('Error logging request:', error);
-    }
+            // Append to log file
+            await fs.promises.appendFile(logFile, logEntry);
+        } catch (error) {
+            console.error('Error logging request:', error);
+        }
+    })();
+
+    return requestId;
 }

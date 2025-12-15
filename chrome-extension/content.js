@@ -131,18 +131,32 @@ function processImages() {
         const computedStyle = window.getComputedStyle(img);
         const imgDisplay = computedStyle.display;
 
+        // Make wrapper contain the image naturally
         wrapper.style.position = 'relative';
-        wrapper.style.display = imgDisplay === 'block' ? 'block' : 'inline-block';
-        wrapper.style.width = img.width + 'px';
-        wrapper.style.height = img.height + 'px';
-        wrapper.style.isolation = 'isolate'; // Create new stacking context
+        wrapper.style.display = imgDisplay === 'inline' ? 'inline-block' : imgDisplay;
+        wrapper.style.isolation = 'isolate';
+
+        // Copy inline styles from image to wrapper (these are intentional layout styles)
+        if (img.style.width) wrapper.style.width = img.style.width;
+        if (img.style.height) wrapper.style.height = img.style.height;
+        if (img.style.maxWidth) wrapper.style.maxWidth = img.style.maxWidth;
+        if (img.style.maxHeight) wrapper.style.maxHeight = img.style.maxHeight;
+
+        // If no inline styles, copy computed dimensions to ensure wrapper has size
+        if (!img.style.width && computedStyle.width !== 'auto') {
+            wrapper.style.width = computedStyle.width;
+        }
+        if (!img.style.height && computedStyle.height !== 'auto') {
+            wrapper.style.height = computedStyle.height;
+        }
 
         img.parentNode.insertBefore(wrapper, img);
         wrapper.appendChild(img);
 
-        // Ensure image fills wrapper
+        // Make image fill the wrapper
         img.style.width = '100%';
         img.style.height = '100%';
+        img.style.objectFit = computedStyle.objectFit || 'cover';
         img.style.display = 'block';
 
         // Add Magic Wand Button

@@ -1,14 +1,12 @@
 {
     "manifest_version": 3,
     "name": "AI Makeover",
-    "version": "1.0",
+    "version": "1.0.1",
     "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjW7T+oALbmmIWiesLN/gxP1XMB0BR2GVupnp3AIp7sxt2tu6neeG8g8OyEn8PFsSUCkvWOUKPmgRUjGBvMOTMfDQohA0lzwx8TbefKLZ2kNg1CEwqGpj2ihPfN4gvzmTWoGZ/ru45ljqS+TPNszzianYa9RIVnkvkkAbU6pFTgchysZndVC54MsZguXkGwSTfHXiqOD1PefVQlKFNQL8ISrIdT1NMP6DXplI35L3hsoNKJEvaxG6t4LIral+/y8mLag9xdXStPmVjRXZt/fXorb0c8gsZRUhcnVjkKqDqh7iw180Y/kGtCG0ZTcix1QrVthV5NhlvNF4cOQBoCBjLwIDAQAB",
     "description": "Add a Magic Wand to images on any site to give them an AI makeover.",
     "permissions": [
         "storage",
-        "identity",
-        "activeTab",
-        "scripting"
+        "identity"
     ],
     "host_permissions": [
         "http://localhost:3000/*",

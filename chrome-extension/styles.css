@@ -1,5 +1,20 @@
 /* AI Makeover Extension Styles */
 
+/* Image wrapper - must be layout-neutral to avoid breaking host pages */
+.ai-makeover-image-wrapper {
+  /* Don't force any dimensions - inherit from content */
+  max-width: 100%;
+  /* Prevent wrapper from collapsing */
+  min-width: 0;
+  min-height: 0;
+  /* Ensure wrapper doesn't add extra spacing */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  /* Inherit box-sizing to match page's layout model */
+  box-sizing: inherit;
+}
+
 .ai-makeover-wand-btn {
   position: absolute;
   top: 50%;
