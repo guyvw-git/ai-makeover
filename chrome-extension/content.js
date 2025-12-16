@@ -11,6 +11,48 @@ console.log('AI Makeover Config:', CONFIG);
 
 console.log("AI Makeover Extension Loaded");
 
+// Global keyboard event blocker for Zillow
+// Prevents spacebar from triggering Zillow's photo browser when our UI is active
+let activeUIElements = new Set(); // Track active shadow hosts
+
+function blockZillowKeyboard(e) {
+    // Only block if we have active UI elements
+    if (activeUIElements.size > 0) {
+        // Always block these keys from Zillow
+        if (e.key === ' ' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Escape') {
+            // Check if our specific custom prompt input has focus
+            const path = e.composedPath ? e.composedPath() : [e.target];
+            const ourInput = path.find(el => el.id === 'ai-makeover-custom-prompt-input');
+
+            // Always prevent default to block Zillow
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            e.preventDefault();
+
+            // If our input has focus and it's spacebar, manually insert the space
+            if (ourInput && e.key === ' ' && e.type === 'keydown') {
+                const start = ourInput.selectionStart;
+                const end = ourInput.selectionEnd;
+                const value = ourInput.value;
+
+                // Insert space at cursor position
+                ourInput.value = value.substring(0, start) + ' ' + value.substring(end);
+
+                // Move cursor after the space
+                ourInput.selectionStart = ourInput.selectionEnd = start + 1;
+
+                // Trigger input event so any listeners know the value changed
+                ourInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+    }
+}
+
+// Install keyboard blocker in capture phase (before Zillow's handlers)
+document.addEventListener('keydown', blockZillowKeyboard, true);
+document.addEventListener('keyup', blockZillowKeyboard, true);
+document.addEventListener('keypress', blockZillowKeyboard, true);
+
 // Helper to create elements
 function createElement(tag, className, innerHTML = '') {
     const el = document.createElement(tag);
@@ -195,6 +237,9 @@ function showRadialMenu(wrapper, img, btn) {
     wrapper.appendChild(shadowHost);
     const shadow = shadowHost.attachShadow({ mode: 'open' });
 
+    // Track this UI element for keyboard blocking
+    activeUIElements.add(shadowHost);
+
     // Load styles into shadow DOM
     const styleLink = document.createElement('link');
     styleLink.setAttribute('rel', 'stylesheet');
@@ -263,10 +308,12 @@ function showRadialMenu(wrapper, img, btn) {
             e.stopPropagation();
             if (item.type === 'custom') {
                 // Show custom prompt input
+                activeUIElements.delete(shadowHost);
                 shadowHost.remove();
                 showMagicInput(wrapper, img, btn);
             } else {
                 // Trigger generation with this style
+                activeUIElements.delete(shadowHost);
                 shadowHost.remove();
                 handleGenerateWithStyle(wrapper, img, btn, item.extensivePrompt);
             }
@@ -388,6 +435,9 @@ function showMagicInput(wrapper, img, btn) {
     wrapper.appendChild(shadowHost);
     const shadow = shadowHost.attachShadow({ mode: 'open' });
 
+    // Track this UI element for keyboard blocking
+    activeUIElements.add(shadowHost);
+
     // Load styles into shadow DOM
     const styleLink = document.createElement('link');
     styleLink.setAttribute('rel', 'stylesheet');
@@ -407,6 +457,7 @@ function showMagicInput(wrapper, img, btn) {
 
         // Input
         const input = createElement('input', 'ai-makeover-text-input');
+        input.id = 'ai-makeover-custom-prompt-input'; // Unique ID for keyboard detection
         input.type = 'text';
         input.placeholder = 'Describe your dream room...';
 
@@ -432,6 +483,7 @@ function showMagicInput(wrapper, img, btn) {
         closeBtn.title = 'Back to menu';
         closeBtn.onclick = (e) => {
             e.stopPropagation();
+            activeUIElements.delete(shadowHost);
             shadowHost.remove();
             showRadialMenu(wrapper, img, btn);
         };
@@ -569,6 +621,7 @@ function showMagicInput(wrapper, img, btn) {
     // Click Outside Listener
     function handleClickOutside(e) {
         if (!shadowHost.contains(e.target) && !btn.contains(e.target)) {
+            activeUIElements.delete(shadowHost);
             shadowHost.remove();
             btn.style.display = 'flex';
             document.removeEventListener('mousedown', handleClickOutside);
