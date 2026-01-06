@@ -147,22 +147,34 @@ function processImages() {
 
         img.dataset.aiMakeoverProcessed = 'true';
 
-        // Check if user is authenticated before showing magic wand
-        console.log('[AI Makeover] Checking auth for image:', img.src.substring(0, 50));
-        console.log('[AI Makeover] authManager defined?', typeof window.authManager !== 'undefined');
+        // TEMPORARY: Skip auth for Chrome Web Store initial submission
+        // TODO: Re-enable after getting stable extension ID from Chrome Web Store
+        const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
 
-        if (typeof window.authManager === 'undefined') {
-            console.log('[AI Makeover] Auth manager not loaded yet');
-            return;
-        }
+        let isAuth = false;
 
-        const isAuth = await window.authManager.isAuthenticated();
-        console.log('[AI Makeover] Is authenticated?', isAuth);
+        if (!SKIP_AUTH) {
+            // Check if user is authenticated before showing magic wand
+            console.log('[AI Makeover] Checking auth for image:', img.src.substring(0, 50));
+            console.log('[AI Makeover] authManager defined?', typeof window.authManager !== 'undefined');
 
-        if (!isAuth) {
-            // Don't show magic wand - user needs to sign in via popup first
-            console.log('[AI Makeover] User not authenticated. Please sign in via extension popup.');
-            return;
+            if (typeof window.authManager === 'undefined') {
+                console.log('[AI Makeover] Auth manager not loaded yet');
+                return;
+            }
+
+            isAuth = await window.authManager.isAuthenticated();
+            console.log('[AI Makeover] Is authenticated?', isAuth);
+
+            if (!isAuth) {
+                // Don't show magic wand - user needs to sign in via popup first
+                console.log('[AI Makeover] User not authenticated. Please sign in via extension popup.');
+                return;
+            }
+        } else {
+            // Skip auth - allow all users for initial Chrome Web Store submission
+            console.log('[AI Makeover] Auth check skipped (SKIP_AUTH=true)');
+            isAuth = true; // Pretend user is authenticated
         }
 
         console.log('[AI Makeover] User is authenticated! Creating magic wand button...');
@@ -348,12 +360,24 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
     btn.style.display = 'flex';
 
     try {
-        // Get auth token
-        const auth = await window.authManager.getAuth();
+        // TEMPORARY: Skip auth for Chrome Web Store initial submission
+        const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
 
-        if (!auth || !auth.accessToken) {
-            showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
-            return;
+        let auth;
+        if (!SKIP_AUTH) {
+            // Get auth token
+            auth = await window.authManager.getAuth();
+
+            if (!auth || !auth.accessToken) {
+                showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+                return;
+            }
+        } else {
+            // Use dummy auth for Chrome Web Store submission
+            auth = {
+                accessToken: 'demo-token',
+                email: 'demo@example.com'
+            };
         }
 
         const base64 = await fetchImageViaBackground(img.src);
@@ -545,12 +569,24 @@ function showMagicInput(wrapper, img, btn) {
         btn.style.display = 'flex';
 
         try {
-            // Get auth token
-            const auth = await window.authManager.getAuth();
+            // TEMPORARY: Skip auth for Chrome Web Store initial submission
+            const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
 
-            if (!auth || !auth.accessToken) {
-                showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
-                return;
+            let auth;
+            if (!SKIP_AUTH) {
+                // Get auth token
+                auth = await window.authManager.getAuth();
+
+                if (!auth || !auth.accessToken) {
+                    showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+                    return;
+                }
+            } else {
+                // Use dummy auth for Chrome Web Store submission
+                auth = {
+                    accessToken: 'demo-token',
+                    email: 'demo@example.com'
+                };
             }
 
             const base64 = await fetchImageViaBackground(img.src);

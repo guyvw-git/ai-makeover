@@ -1,11 +1,10 @@
 {
     "manifest_version": 3,
     "name": "AI Makeover",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Add a Magic Wand to images on any site to give them an AI makeover.",
     "permissions": [
-        "storage",
-        "identity"
+        "storage"
     ],
     "host_permissions": [
         "https://*/*",
@@ -32,13 +31,6 @@
     "action": {
         "default_popup": "popup.html",
         "default_title": "AI Makeover"
-    },
-    "oauth2": {
-        "client_id": "153178030687-hnc7q1ovdnn0jlfvkdmellktnnj4uh1i.apps.googleusercontent.com",
-        "scopes": [
-            "https://www.googleapis.com/auth/userinfo.email",
-            "https://www.googleapis.com/auth/userinfo.profile"
-        ]
     },
     "web_accessible_resources": [
         {
