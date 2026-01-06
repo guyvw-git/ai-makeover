@@ -215,7 +215,7 @@ function processImages() {
 
         // Add Magic Wand Button
         const btn = createElement('div', 'ai-makeover-wand-btn', WAND_ICON);
-        btn.title = "AI Makeover";
+        btn.title = "ReImagine";
         wrapper.appendChild(btn);
 
         // Handle Wand Click - Show Radial Menu
@@ -369,7 +369,7 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
             auth = await window.authManager.getAuth();
 
             if (!auth || !auth.accessToken) {
-                showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+                showError(wrapper, 'Please sign in via the extension popup to use ReImagine', btn);
                 return;
             }
         } else {
@@ -578,7 +578,7 @@ function showMagicInput(wrapper, img, btn) {
                 auth = await window.authManager.getAuth();
 
                 if (!auth || !auth.accessToken) {
-                    showError(wrapper, 'Please sign in via the extension popup to use AI Makeover', btn);
+                    showError(wrapper, 'Please sign in via the extension popup to use ReImagine', btn);
                     return;
                 }
             } else {
@@ -768,7 +768,7 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl) {
         <img src="${aiUrl}" class="ai-makeover-img-ai ai-makeover-overlay-ai" style="opacity: 1">
 
             <div class="ai-makeover-label ai-makeover-label-original">Original</div>
-            <div class="ai-makeover-label ai-makeover-label-ai">AI Makeover</div>
+            <div class="ai-makeover-label ai-makeover-label-ai">ReImagine</div>
 
             <div class="ai-makeover-slider-container">
                 <span class="ai-makeover-slider-label">Original</span>

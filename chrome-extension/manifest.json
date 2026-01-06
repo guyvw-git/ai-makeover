@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "AI Makeover",
+    "name": "ReImagine",
     "version": "1.0.3",
     "description": "Add a Magic Wand to images on any site to give them an AI makeover.",
     "permissions": [
@@ -30,7 +30,7 @@
     },
     "action": {
         "default_popup": "popup.html",
-        "default_title": "AI Makeover"
+        "default_title": "ReImagine"
     },
     "web_accessible_resources": [
         {
