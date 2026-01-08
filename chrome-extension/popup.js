@@ -5,13 +5,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const signOutBtn = document.getElementById('sign-out-btn');
 
     // Check auth status
-    const isAuth = await authManager.isAuthenticated();
+    // TEMPORARY: Skip auth for Chrome Web Store initial submission
+    const SKIP_AUTH = true;
+    console.log('[Popup] JavaScript running. SKIP_AUTH:', SKIP_AUTH);
 
-    if (isAuth) {
-        const user = await authManager.getCurrentUser();
-        showSignedInView(user);
+    if (SKIP_AUTH) {
+        showSignedInView({
+            name: 'ReImagine User',
+            email: 'user@example.com',
+            picture: 'https://lh3.googleusercontent.com/a/default-user=s96-c' // Generic avatar
+        });
+        // Hide sign-out button in this mode since it does nothing real
+        if (signOutBtn) signOutBtn.style.display = 'none';
     } else {
-        showSignedOutView();
+        const isAuth = await authManager.isAuthenticated();
+        if (isAuth) {
+            const user = await authManager.getCurrentUser();
+            showSignedInView(user);
+        } else {
+            showSignedOutView();
+        }
     }
 
     // Sign in handler

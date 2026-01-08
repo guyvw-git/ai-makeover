@@ -8,7 +8,6 @@ if (!window.AI_MAKEOVER_CONFIG) {
 }
 
 console.log('AI Makeover Config:', CONFIG);
-console.log('AI Makeover API URL:', CONFIG.API_BASE_URL);
 
 console.log("AI Makeover Extension Loaded");
 
@@ -781,6 +780,7 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl, products = [], onReg
                 <span class="ai-makeover-slider-label">Original</span>
                 <input type="range" min="0" max="100" value="100" class="ai-makeover-range">
                     <span class="ai-makeover-slider-label ai">AI</span>
+                    <span class="ai-makeover-slider-label ai">AI</span>
                     <!-- Regenerate Button -->
                     <button class="ai-makeover-regenerate-btn" title="Regenerate">
                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
@@ -875,18 +875,8 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl, products = [], onReg
         if (onRegenerate) {
             regenBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // Animate out
-                host.style.transition = 'opacity 0.3s ease-in-out';
-                host.style.opacity = '0';
-
-                // Show the loading wand immediately behind the fading overlay
-                if (typeof onRegenerate === 'function') onRegenerate();
-
-                // Remove overlay after fade
-                setTimeout(() => {
-                    host.remove();
-                }, 300);
+                host.remove(); // Close overlay
+                onRegenerate(); // Trigger retry
             });
         } else {
             regenBtn.style.display = 'none';
@@ -904,4 +894,3 @@ function showComparisonOverlay(wrapper, originalUrl, aiUrl, products = [], onReg
 // Run periodically
 setInterval(processImages, 2000);
 processImages();
-

@@ -20,13 +20,22 @@ export async function POST(request: Request) {
 
     // Verify Google OAuth token
     let userEmail: string;
-    try {
-        const userInfo = await verifyGoogleToken(token);
-        userEmail = userInfo.email;
-        console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
-    } catch (error) {
-        console.error('Token verification failed:', error);
-        return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
+
+    // TEMPORARY: Allow demo token for Chrome Web Store submission / disabled auth mode
+    console.log(`[${requestId}] Auth Header present. Token starts with: ${token.substring(0, 5)}...`);
+
+    if (token === 'demo-token') {
+        userEmail = 'demo@example.com';
+        console.log(`[${requestId}] Skipping auth verification for demo token`);
+    } else {
+        try {
+            const userInfo = await verifyGoogleToken(token);
+            userEmail = userInfo.email;
+            console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
+        } catch (error) {
+            console.error('Token verification failed:', error);
+            return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
+        }
     }
 
     const { imageBase64, prompt, metadata, folderPath, fileName } = await request.json();
@@ -207,13 +216,80 @@ CRITICAL RULES:
 
             logRequest({ requestId, userEmail, sourceUrl, status: 'SUCCESS' });
 
-            // Return response immediately without waiting for file writes
+            // Return response immediately without waiting for file writes (except for product analysis which we await)
+
+            // --- PRODUCT IDENTIFICATION (Monetization) ---
+            let productSuggestions: any[] = [];
+            try {
+                console.log(`[${requestId}] identifying products in generated image...`);
+                const analysisModel = "gemini-1.5-flash";
+                const analysisUrl = `https://generativelanguage.googleapis.com/v1beta/models/${analysisModel}:generateContent?key=${apiKey}`;
+
+                const analysisPrompt = `Identify 3 distinctly different furniture or decor items in this image that a user might want to buy. 
+                Focus on the most prominent items (e.g. Sofa, Rug, Chandelier, Coffee Table).
+                
+                Return a raw JSON list (no markdown) where each item has:
+                - label: A short, display-friendly name (e.g. "Velvet Sofa")
+                - query: A specific search query to find this exact style on Amazon (e.g. "Green velvet tufted sofa modern")
+                
+                Example output:
+                [
+                  {"label": "Modern Rug", "query": "Geometric wool rug grey modern"},
+                  {"label": "Arc Lamp", "query": "Gold arc floor lamp marble base"}
+                ]`;
+
+                const analysisPayload = {
+                    "generationConfig": {
+                        "response_mime_type": "application/json"
+                    },
+                    contents: [{
+                        parts: [
+                            { text: analysisPrompt },
+                            {
+                                inline_data: {
+                                    mime_type: aiImageMimeType,
+                                    data: aiImageBase64
+                                }
+                            }
+                        ]
+                    }]
+                };
+
+                const analysisResponse = await fetch(analysisUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(analysisPayload)
+                });
+
+                if (analysisResponse.ok) {
+                    const analysisData = await analysisResponse.json();
+                    const text = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        try {
+                            // Clean potential markdown code blocks just in case
+                            const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                            productSuggestions = JSON.parse(cleanedText);
+                            console.log(`[${requestId}] Identified ${productSuggestions.length} products`);
+                        } catch (parseError) {
+                            console.error(`[${requestId}] Failed to parse product JSON:`, parseError);
+                            // Fallback to empty
+                        }
+                    }
+                } else {
+                    console.warn(`[${requestId}] Product analysis failed: ${analysisResponse.status}`);
+                }
+            } catch (analysisError) {
+                console.error(`[${requestId}] Product analysis error:`, analysisError);
+            }
+            // ---------------------------------------------
+
             return NextResponse.json({
                 originalUrl: 'local-file',
                 aiUrl: aiImageUrl,
                 status: 'completed',
                 requestId: requestId,
                 curlCommand: curlCommand,
+                products: productSuggestions,
                 debug: {
                     prompt: fullPrompt
                 }
