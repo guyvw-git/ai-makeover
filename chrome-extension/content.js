@@ -12,6 +12,59 @@ console.log('AI Makeover API URL:', CONFIG.API_BASE_URL);
 
 console.log("AI Makeover Extension Loaded");
 
+// --- ACTIVATION CONTROL ---
+let isExtensionEnabled = true;
+
+// Initialize state
+chrome.storage.local.get(['extensionEnabled'], (result) => {
+    // Default to true if undefined
+    isExtensionEnabled = result.extensionEnabled !== false;
+    if (isExtensionEnabled) {
+        processImages(); // Initial process
+    } else {
+        restoreOriginalImages(); // Ensure clean state
+    }
+});
+
+// Listen for state changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.extensionEnabled) {
+        isExtensionEnabled = changes.extensionEnabled.newValue;
+        console.log('[AI Makeover] Extension enabled state changed to:', isExtensionEnabled);
+
+        if (isExtensionEnabled) {
+            processImages();
+        } else {
+            restoreOriginalImages();
+        }
+    }
+});
+
+function restoreOriginalImages() {
+    console.log('[AI Makeover] Disabling extension - Restoring original images...');
+    const wrappers = document.querySelectorAll('.ai-makeover-image-wrapper');
+    wrappers.forEach(wrapper => {
+        const img = wrapper.querySelector('img');
+        if (img) {
+            // Remove processing flag
+            delete img.dataset.aiMakeoverProcessed;
+
+            // Move image back to original parent, before the wrapper
+            wrapper.parentNode.insertBefore(img, wrapper);
+
+            // Remove wrapper (and the wand button inside it)
+            wrapper.remove();
+
+            // Reset styles we might have messed with
+            img.style.width = '';
+            img.style.height = '';
+            img.style.objectFit = '';
+            img.style.display = '';
+        }
+    });
+}
+// -------------------------
+
 // Global keyboard event blocker for Zillow
 // Prevents spacebar from triggering Zillow's photo browser when our UI is active
 let activeUIElements = new Set(); // Track active shadow hosts
@@ -141,6 +194,12 @@ function processImages() {
         ) return;
     }
 
+    // Check Global Enable State
+    if (!isExtensionEnabled) {
+        // console.log('[AI Makeover] Extension is disabled via popup.');
+        return;
+    }
+
     const images = document.querySelectorAll('img');
     images.forEach(async img => {
         // Skip if already processed or too small
@@ -148,9 +207,8 @@ function processImages() {
 
         img.dataset.aiMakeoverProcessed = 'true';
 
-        // TEMPORARY: Skip auth for Chrome Web Store initial submission
-        // TODO: Re-enable after getting stable extension ID from Chrome Web Store
-        const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
+        // Authentication Status Check
+        const SKIP_AUTH = false;
 
         let isAuth = false;
 
@@ -361,8 +419,8 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
     btn.style.display = 'flex';
 
     try {
-        // TEMPORARY: Skip auth for Chrome Web Store initial submission
-        const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
+        // Authentication Check
+        const SKIP_AUTH = false;
 
         let auth;
         if (!SKIP_AUTH) {
@@ -573,8 +631,8 @@ function showMagicInput(wrapper, img, btn) {
         btn.style.display = 'flex';
 
         try {
-            // TEMPORARY: Skip auth for Chrome Web Store initial submission
-            const SKIP_AUTH = true; // Set to false after Chrome Web Store approval
+            // Authentication Check
+            const SKIP_AUTH = false;
 
             let auth;
             if (!SKIP_AUTH) {

@@ -21,21 +21,15 @@ export async function POST(request: Request) {
     // Verify Google OAuth token
     let userEmail: string;
 
-    // TEMPORARY: Allow demo token for Chrome Web Store submission / disabled auth mode
-    console.log(`[${requestId}] Auth Header present. Token starts with: ${token.substring(0, 5)}...`);
+    console.log(`[${requestId}] Auth Header present. Verifying token...`);
 
-    if (token === 'demo-token') {
-        userEmail = 'demo@example.com';
-        console.log(`[${requestId}] Skipping auth verification for demo token`);
-    } else {
-        try {
-            const userInfo = await verifyGoogleToken(token);
-            userEmail = userInfo.email;
-            console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
-        } catch (error) {
-            console.error('Token verification failed:', error);
-            return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
-        }
+    try {
+        const userInfo = await verifyGoogleToken(token);
+        userEmail = userInfo.email;
+        console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
     const { imageBase64, prompt, metadata, folderPath, fileName } = await request.json();

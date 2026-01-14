@@ -4,9 +4,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const signInBtn = document.getElementById('sign-in-btn');
     const signOutBtn = document.getElementById('sign-out-btn');
 
+    // Toggle Logic
+    const toggle = document.getElementById('extension-toggle');
+    const toggleStatus = document.getElementById('toggle-status-text');
+
+    function updateToggleText(enabled) {
+        if (toggleStatus) {
+            toggleStatus.textContent = enabled ? 'Activated' : 'Disabled';
+            toggleStatus.style.color = enabled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)';
+        }
+    }
+
+    // Load initial state
+    chrome.storage.local.get(['extensionEnabled'], (result) => {
+        // Default to true if not set
+        const isEnabled = result.extensionEnabled !== false;
+        if (toggle) {
+            toggle.checked = isEnabled;
+            updateToggleText(isEnabled);
+        }
+    });
+
+    if (toggle) {
+        toggle.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            chrome.storage.local.set({ extensionEnabled: isEnabled });
+            updateToggleText(isEnabled);
+        });
+    }
+
     // Check auth status
-    // TEMPORARY: Skip auth for Chrome Web Store initial submission
-    const SKIP_AUTH = true;
+    const SKIP_AUTH = false;
     console.log('[Popup] JavaScript running. SKIP_AUTH:', SKIP_AUTH);
 
     if (SKIP_AUTH) {

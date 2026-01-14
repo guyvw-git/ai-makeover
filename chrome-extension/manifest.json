@@ -1,10 +1,11 @@
 {
     "manifest_version": 3,
     "name": "ReImagine",
-    "version": "1.0.5",
+    "version": "1.0.7",
     "description": "Add a Magic Wand to images on any site to give them an AI makeover.",
     "permissions": [
-        "storage"
+        "storage",
+        "identity"
     ],
     "host_permissions": [
         "https://*/*",
@@ -43,5 +44,13 @@
                 "<all_urls>"
             ]
         }
-    ]
+    ],
+    "oauth2": {
+        "client_id": "153178030687-hnc7q1ovdnn0jlfvkdmellktnnj4uh1i.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        ]
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuE3Uu7kExveSOCK37EGJCFl0Y0qewJeaQHWmX9Be5SmBEa2kYYpzY0ebxa+hhE8CjXSRLPafTYm2SL2bHj25iU0J7hnRnykj9SVGCvDx1Wm/Q3uSF6B3FftKHYI0htdqiC6acne14+4guCu6Jnm1qY/DvEnPp01kvabkaDskGQOtUOf+Llb7UGqY+nu/QyZJqaiYNSslRGzsCQGsNr1HJCW4dRDZrGCPEsocruOfLY2K0oJlPMLc/TvLPZDN8X0L1mo3gBDcfKvRo6sVHWSM0FRDhvtZXAbgGX3y/JwWZCN+35p1vgkuVsj0w27vMybdP/8Io81U6FKl/aYlP4aJ+QIDAQAB"
 }
