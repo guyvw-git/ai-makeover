@@ -447,7 +447,8 @@ async function handleGenerateWithStyle(wrapper, img, btn, styleId) {
                 styleId: styleId, // Use ID for security
                 metadata: {
                     userEmail: auth.email,
-                    sourceUrl: window.location.href
+                    sourceUrl: window.location.href,
+                    originApp: 'chrome-extension'
                 }
             })
         });
@@ -650,7 +651,8 @@ function showMagicInput(wrapper, img, btn) {
                 imageBase64: base64,
                 metadata: {
                     userEmail: auth.email,
-                    sourceUrl: window.location.href
+                    sourceUrl: window.location.href,
+                    originApp: 'chrome-extension'
                 }
             };
 

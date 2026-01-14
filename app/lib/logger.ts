@@ -7,6 +7,8 @@ export function logRequest(data: {
     requestId?: string; // Optional - will be generated if not provided
     userEmail: string;
     sourceUrl: string;
+    originApp?: string; // e.g., 'chrome-extension', 'web-app'
+    ipAddress?: string;
     originalUrl?: string;
     status: string;
     error?: string;
@@ -14,7 +16,11 @@ export function logRequest(data: {
     // Generate UUID if not provided
     const requestId = data.requestId || randomUUID();
     const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] RequestID: ${requestId} | User: ${data.userEmail} | Source: ${data.sourceUrl} | Status: ${data.status}${data.error ? ` | Error: ${data.error}` : ''}\n`;
+
+    const app = data.originApp || 'unknown';
+    const ip = data.ipAddress || 'unknown';
+
+    const logEntry = `[${timestamp}] RequestID: ${requestId} | App: ${app} | User: ${data.userEmail} | IP: ${ip} | Source: ${data.sourceUrl} | Status: ${data.status}${data.error ? ` | Error: ${data.error}` : ''}\n`;
 
     const logDir = path.join(process.cwd(), 'logs');
     const logFile = path.join(logDir, 'requests.log');

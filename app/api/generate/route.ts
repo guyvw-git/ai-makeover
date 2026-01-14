@@ -23,18 +23,25 @@ export async function POST(request: Request) {
     // Verify Google OAuth token
     let userEmail: string;
 
+    // Extract IP Address
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ipAddress = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
+
     console.log(`[${requestId}] Auth Header present. Verifying token...`);
 
     try {
         const userInfo = await verifyGoogleToken(token);
         userEmail = userInfo.email;
-        console.log(`[${requestId}] Image generation request from user: ${userEmail}`);
+        console.log(`[${requestId}] Image generation request from user: ${userEmail} | IP: ${ipAddress}`);
     } catch (error) {
         console.error('Token verification failed:', error);
         return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
     const { imageBase64, styleId, customPrompt, metadata, folderPath, fileName } = await request.json();
+
+    const originApp = metadata?.originApp || 'unknown';
+    const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
 
     // Resolve Prompt
     let prompt = '';
@@ -49,17 +56,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Missing styleId or valid customPrompt' }, { status: 400 });
     }
 
-    const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
-
     if (!imageBase64) {
-        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'Missing image or prompt' });
+        logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'FAILED', error: 'Missing image or prompt' });
         return NextResponse.json({ error: 'Image data and prompt are required' }, { status: 400 });
     }
 
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
         console.error('GOOGLE_API_KEY is missing');
-        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'Server config error' });
+        logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'FAILED', error: 'Server config error' });
         return NextResponse.json({ error: 'Server configuration error: API key missing' }, { status: 500 });
     }
 
@@ -228,7 +233,7 @@ CRITICAL RULES:
                 }
             })(); // Immediately invoke, don't await
 
-            logRequest({ requestId, userEmail, sourceUrl, status: 'SUCCESS' });
+            logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'SUCCESS' });
 
             // Return response immediately without waiting for file writes (except for product analysis which we await)
 
@@ -351,7 +356,7 @@ CRITICAL RULES:
                                 const aiImageBase64 = inlineData.data;
                                 const aiImageUrl = `data:${inlineData.mime_type};base64,${aiImageBase64}`;
 
-                                logRequest({ requestId, userEmail, sourceUrl, status: 'SUCCESS (RETRY)' });
+                                logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'SUCCESS (RETRY)' });
 
                                 return NextResponse.json({
                                     originalUrl: 'local-file',
@@ -368,7 +373,7 @@ CRITICAL RULES:
             }
 
             console.error("No image found in generation response. Full Response Structure:", JSON.stringify(data, null, 2));
-            logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'No image returned (Text response: ' + (textResponse ? 'Yes' : 'No') + ')' });
+            logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'FAILED', error: 'No image returned (Text response: ' + (textResponse ? 'Yes' : 'No') + ')' });
 
             return NextResponse.json({
                 error: 'AI model returned text instead of an image. This usually happens with exterior photos. Try using an interior room photo instead.',
@@ -380,7 +385,7 @@ CRITICAL RULES:
 
     } catch (error: any) {
         console.error("Gemini API Error:", error);
-        logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: error.message || 'Unknown error' });
+        logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'FAILED', error: error.message || 'Unknown error' });
 
         const status = error.status === 429 ? 429 : 500;
         const message = error.status === 429 ? 'Rate limit exceeded. Please try again in a moment.' : 'Failed to process image with AI';
