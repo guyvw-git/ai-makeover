@@ -5,6 +5,8 @@ import { randomUUID } from 'crypto';
 import { verifyGoogleToken } from '../verify-token';
 import { logRequest } from '../../lib/logger';
 
+import { STYLE_PROMPTS } from './style-prompts';
+
 export async function POST(request: Request) {
     // Generate UUID for this request
     const requestId = randomUUID();
@@ -32,10 +34,24 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
     }
 
-    const { imageBase64, prompt, metadata, folderPath, fileName } = await request.json();
+    const { imageBase64, styleId, customPrompt, metadata, folderPath, fileName } = await request.json();
+
+    // Resolve Prompt
+    let prompt = '';
+
+    if (styleId && STYLE_PROMPTS[styleId]) {
+        console.log(`[${requestId}] Using server-side prompt for style: ${styleId}`);
+        prompt = "Redesign this room. " + STYLE_PROMPTS[styleId];
+    } else if (customPrompt) {
+        console.log(`[${requestId}] Using custom user prompt`);
+        prompt = "Redesign this room. " + customPrompt;
+    } else {
+        return NextResponse.json({ error: 'Missing styleId or valid customPrompt' }, { status: 400 });
+    }
+
     const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
 
-    if (!imageBase64 || !prompt) {
+    if (!imageBase64) {
         logRequest({ requestId, userEmail, sourceUrl, status: 'FAILED', error: 'Missing image or prompt' });
         return NextResponse.json({ error: 'Image data and prompt are required' }, { status: 400 });
     }
@@ -70,8 +86,12 @@ export async function POST(request: Request) {
         const base64Data = imageBase64.split(',')[1] || imageBase64;
 
         const fullPrompt = `YOU MUST GENERATE AN IMAGE. DO NOT respond with text only.
+
+Rerender the attached image into a luxury house setting. Focus on resell value for the house and touch up this room to make it visually fantastic. 
+You CAN NOT change the structural layout of the room. You should work with light colors like white, black trim and wood accents to make it look expensive. 
+Always think about redoing flooring and walls. You should furnish the rooms too so it looks like they are nicely staged.
         
-Redesign the attached image using these instructions: ${prompt}
+Specific Style Instructions: ${prompt}
         
 CRITICAL RULES:
 - You MUST output a photorealistic image, not text

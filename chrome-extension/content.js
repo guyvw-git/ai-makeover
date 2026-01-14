@@ -128,38 +128,32 @@ const DESIGN_STYLES = [
     {
         id: 'modern',
         name: 'Modern',
-        icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9',
-        extensivePrompt: 'Render this room in a sleek Modern style. Use clean lines, minimalist furniture, and a neutral color palette (white, grey, black). Incorporate materials like glass, metal, and smooth wood. Ensure the space is clutter-free and functional with contemporary, geometric lighting. The final look should be elegant, simple, and high-end.'
+        icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9'
     },
     {
         id: 'scandinavian',
         name: 'Scandinavian',
-        icon: 'M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z',
-        extensivePrompt: 'Render this room in a Scandinavian style. Make it bright, airy, and cozy. Use light wood tones, white walls, and natural fabrics. Add subtle pastels, indoor plants, and soft textures. Focus on simplicity, comfort, and natural light. Avoid heavy ornamentation or dark colors.'
+        icon: 'M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z'
     },
     {
         id: 'industrial',
         name: 'Industrial',
-        icon: 'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418',
-        extensivePrompt: 'Render this room in an Industrial style. Feature exposed brick or concrete, metal fixtures, and reclaimed wood. Use a neutral earth tone palette with leather accents and iron piping. Include large factory-style windows if possible. Lighting should be warm and warehouse-inspired (e.g., Edison bulbs).'
+        icon: 'M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418'
     },
     {
         id: 'boho',
         name: 'Bohemian',
-        icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z',
-        extensivePrompt: 'Render this room in a Bohemian (Boho) style. Create an artistic, relaxed, and eclectic space. Use warm earthy tones, layered patterns, and plenty of indoor plants. Incorporate vintage or handmade pieces, woven textiles, rugs, and natural materials. The design should feel lived-in and expressive.'
+        icon: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z'
     },
     {
         id: 'traditional',
         name: 'Traditional',
-        icon: 'M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z',
-        extensivePrompt: 'Render this room in a Traditional style. Use classic furniture shapes, rich wood finishes, and elegant details. Emphasize symmetry and a warm neutral color palette. Incorporate paneling, molding, patterned fabrics, and refined decor like chandeliers. Avoid modern minimalism.'
+        icon: 'M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z'
     },
     {
         id: 'japandi',
         name: 'Japandi',
-        icon: 'M5 12h14M12 5v14m-7 3h14a2 2 0 002-2V7.5L12 2 3 7.5V19a2 2 0 002 2z',
-        extensivePrompt: 'Render this room in Japandi style — a fusion of Japanese minimalism and Scandinavian warmth. Use natural materials like light wood and stone, neutral earthy tones (tan, sand, charcoal, off-white), and clean, low-profile furniture. Add subtle texture with linen, organic forms, and soft lighting. The final result should feel calm, harmonious, balanced, and understated with focus on simplicity and nature.'
+        icon: 'M5 12h14M12 5v14m-7 3h14a2 2 0 002-2V7.5L12 2 3 7.5V19a2 2 0 002 2z'
     }
 ];
 
@@ -386,7 +380,7 @@ function showRadialMenu(wrapper, img, btn) {
                 // Trigger generation with this style
                 activeUIElements.delete(shadowHost);
                 shadowHost.remove();
-                handleGenerateWithStyle(wrapper, img, btn, item.extensivePrompt);
+                handleGenerateWithStyle(wrapper, img, btn, item.id);
             }
         });
 
@@ -413,7 +407,7 @@ function showRadialMenu(wrapper, img, btn) {
 }
 
 // Handle generation with a selected style
-async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
+async function handleGenerateWithStyle(wrapper, img, btn, styleId) {
     // Show loading state
     btn.classList.add('ai-makeover-loading');
     btn.style.display = 'flex';
@@ -441,9 +435,7 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
 
         const base64 = await fetchImageViaBackground(img.src);
 
-        // Use the style's extensive prompt
-        const finalPrompt = "Redesign this room. " + stylePrompt;
-
+        // Send styleId instead of full prompt
         const response = await fetch(`${CONFIG.API_BASE_URL}/api/generate`, {
             method: 'POST',
             headers: {
@@ -452,7 +444,7 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
             },
             body: JSON.stringify({
                 imageBase64: base64,
-                prompt: finalPrompt,
+                styleId: styleId, // Use ID for security
                 metadata: {
                     userEmail: auth.email,
                     sourceUrl: window.location.href
@@ -475,7 +467,7 @@ async function handleGenerateWithStyle(wrapper, img, btn, stylePrompt) {
         if (data.aiUrl) {
             showComparisonOverlay(wrapper, img.src, data.aiUrl, data.products, () => {
                 // Regenerate callback
-                handleGenerateWithStyle(wrapper, img, btn, stylePrompt);
+                handleGenerateWithStyle(wrapper, img, btn, styleId);
             });
         } else {
             showError(wrapper, 'AI Generation Failed: ' + (data.error || 'Unknown error'), btn);
@@ -604,8 +596,9 @@ function showMagicInput(wrapper, img, btn) {
 `;
             styleBtn.onclick = (e) => {
                 e.stopPropagation();
-                handleGenerate(null, style.extensivePrompt);
+                handleGenerate(null, style.id);
             };
+
             bar.appendChild(styleBtn);
         });
 
@@ -623,7 +616,7 @@ function showMagicInput(wrapper, img, btn) {
     }
 
     // Handle Generation
-    async function handleGenerate(magicPrompt, overridePrompt = null) {
+    async function handleGenerate(customPrompt, styleId = null) {
         shadowHost.remove();
 
         // Add loading state to button instead of separate spinner
@@ -653,14 +646,21 @@ function showMagicInput(wrapper, img, btn) {
 
             const base64 = await fetchImageViaBackground(img.src);
 
-            // Default prompt logic
-            let finalPrompt = "Rerender the attached image into a luxury house setting. Focus on resell value for the house and touch up this room to make it visually fantastic. You CAN NOT change the structural layout of the room. You should work with light colors like white, black trim and wood accents to make it look expensive. Always think about redoing flooring and walls. You should furnish the rooms too so it looks like they are nicely staged";
+            const payload = {
+                imageBase64: base64,
+                metadata: {
+                    userEmail: auth.email,
+                    sourceUrl: window.location.href
+                }
+            };
 
-            if (overridePrompt) {
-                // Prepend clear instruction to avoid text-only response
-                finalPrompt = "Redesign this room. " + overridePrompt;
-            } else if (magicPrompt) {
-                finalPrompt += " " + magicPrompt;
+            if (styleId) {
+                payload.styleId = styleId;
+            } else if (customPrompt) {
+                payload.customPrompt = customPrompt;
+            } else {
+                // Default fallback if nothing provided (though UI shouldn't allow this)
+                payload.styleId = 'modern';
             }
 
             const response = await fetch(`${CONFIG.API_BASE_URL}/api/generate`, {
@@ -669,14 +669,7 @@ function showMagicInput(wrapper, img, btn) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${auth.accessToken}`
                 },
-                body: JSON.stringify({
-                    imageBase64: base64,
-                    prompt: finalPrompt,
-                    metadata: {
-                        userEmail: auth.email,
-                        sourceUrl: window.location.href
-                    }
-                })
+                body: JSON.stringify(payload)
             });
 
             // Handle 401 Unauthorized (token expired/invalid)
