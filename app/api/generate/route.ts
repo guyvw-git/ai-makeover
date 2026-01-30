@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { randomUUID } from 'crypto';
 import { verifyGoogleToken } from '../verify-token';
 import { logRequest } from '../../lib/logger';
+import { uploadToGCS } from '../../lib/storage';
 
 import { STYLE_PROMPTS } from './style-prompts';
 
@@ -14,34 +13,62 @@ export async function POST(request: Request) {
     // Extract and verify auth token
     const authHeader = request.headers.get('authorization');
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
-    }
-
-    const token = authHeader.substring(7);
-
-    // Verify Google OAuth token
-    let userEmail: string;
-
-    // Extract IP Address
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ipAddress = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
 
-    console.log(`[${requestId}] Auth Header present. Verifying token...`);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // CHECK FOR BYPASS KEY
+        const bypassKey = request.headers.get('x-api-key');
+        if (bypassKey && process.env.API_BYPASS_KEY && bypassKey === process.env.API_BYPASS_KEY) {
+            console.log(`[${requestId}] Auth Bypass Key used. Skipping token verification.`);
+            // Proceed with dummy user
+        } else {
+            logRequest({
+                requestId,
+                userEmail: 'unknown',
+                sourceUrl: 'unknown',
+                originApp: 'unknown',
+                ipAddress,
+                status: 'AUTH_FAILED',
+                error: 'No token provided'
+            });
+            return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
+        }
+    }
 
-    try {
-        const userInfo = await verifyGoogleToken(token);
-        userEmail = userInfo.email;
-        console.log(`[${requestId}] Image generation request from user: ${userEmail} | IP: ${ipAddress}`);
-    } catch (error) {
-        console.error('Token verification failed:', error);
-        return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
+    let userEmail = 'dev-bypass-user'; // Default for bypass
+
+    // Verify Google OAuth token (only if not bypassed)
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        console.log(`[${requestId}] Auth Header present. Verifying token...`);
+
+        try {
+            const userInfo = await verifyGoogleToken(token);
+            userEmail = userInfo.email;
+        } catch (error) {
+            console.error('Token verification failed:', error);
+            // Log the failed auth attempt
+            logRequest({
+                requestId,
+                userEmail: 'unknown',
+                sourceUrl: 'unknown',
+                originApp: 'unknown',
+                ipAddress,
+                status: 'AUTH_FAILED',
+                error: 'Invalid token'
+            });
+            return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 });
+        }
     }
 
     const { imageBase64, styleId, customPrompt, metadata, folderPath, fileName } = await request.json();
 
     const originApp = metadata?.originApp || 'unknown';
     const sourceUrl = metadata?.sourceUrl || 'Unknown Source';
+
+    // Log request processing start with style info
+    console.log(`[${requestId}] Image generation request from user: ${userEmail} | Style: ${styleId || 'custom'} | IP: ${ipAddress}`);
 
     // Resolve Prompt
     let prompt = '';
@@ -158,10 +185,10 @@ CRITICAL RULES:
         console.log(`Sending direct request to ${model}...`);
         const data = await callWithRetry(makeRequest);
 
-        // UNCONDITIONAL DEBUG LOG
-        console.log("--- FULL API RESPONSE ---");
-        console.log(JSON.stringify(data, null, 2));
-        console.log("-------------------------");
+        // Debug logging (minimized for production per user request)
+        // console.log("--- FULL API RESPONSE ---");
+        // console.log(JSON.stringify(data, null, 2));
+        // console.log("-------------------------");
 
         // Check for image in the response
         let generatedImagePart: any = null;
@@ -191,49 +218,37 @@ CRITICAL RULES:
             const aiImageMimeType = inlineData.mime_type || inlineData.mimeType;
             const aiImageUrl = `data:${aiImageMimeType};base64,${aiImageBase64}`;
 
-            // Persist images asynchronously (fire-and-forget, don't block response)
-            const generatedImagesDir = path.join(process.cwd(), 'generated-images');
+            // Persist images to GCS
             const extension = aiImageMimeType.includes('png') ? 'png' : 'jpg';
 
-            // Fire-and-forget async image persistence
-            (async () => {
-                try {
-                    // Ensure directory exists
-                    await fs.promises.mkdir(generatedImagesDir, { recursive: true });
+            try {
+                // Prepare buffers
+                const originalImageBuffer = Buffer.from(base64Data, 'base64');
+                const aiImageBuffer = Buffer.from(aiImageBase64, 'base64');
 
-                    // Prepare buffers
-                    const originalImageBuffer = Buffer.from(base64Data, 'base64');
-                    const aiImageBuffer = Buffer.from(aiImageBase64, 'base64');
+                const originalPath = `images/OG_${requestId}.${extension}`;
+                const aiPath = `images/AI_${requestId}.${extension}`;
 
-                    // Save both images in parallel
-                    const originalImagePath = path.join(generatedImagesDir, `OG_${requestId}.${extension}`);
-                    const aiImagePath = path.join(generatedImagesDir, `AI_${requestId}.${extension}`);
+                console.log(`[${requestId}] Uploading images to GCS...`);
 
-                    await Promise.all([
-                        fs.promises.writeFile(originalImagePath, originalImageBuffer),
-                        fs.promises.writeFile(aiImagePath, aiImageBuffer)
-                    ]);
+                // Upload to GCS in parallel and await completion to ensure persistence
+                const [originalUrl, aiUrl] = await Promise.all([
+                    uploadToGCS(originalImageBuffer, originalPath, aiImageMimeType.includes('png') ? 'image/png' : 'image/jpeg'),
+                    uploadToGCS(aiImageBuffer, aiPath, aiImageMimeType)
+                ]);
 
-                    console.log(`[${requestId}] Saved original image to: ${originalImagePath}`);
-                    console.log(`[${requestId}] Saved AI-generated image to: ${aiImagePath}`);
+                console.log(`[${requestId}] Saved to GCS: ${originalUrl}`);
+                console.log(`[${requestId}] Saved to GCS: ${aiUrl}`);
 
-                    // Optional: Also save to user-specified folder if provided
-                    if (folderPath && fileName) {
-                        try {
-                            const outputFileName = `render_${fileName}`;
-                            const outputPath = path.join(folderPath, outputFileName);
-                            await fs.promises.writeFile(outputPath, aiImageBuffer);
-                            console.log(`[${requestId}] Also saved to user folder: ${outputPath}`);
-                        } catch (userFolderError) {
-                            console.error(`[${requestId}] Failed to save to user folder:`, userFolderError);
-                        }
-                    }
-                } catch (saveError) {
-                    console.error(`[${requestId}] Failed to save images to disk:`, saveError);
-                }
-            })(); // Immediately invoke, don't await
+            } catch (saveError) {
+                console.error(`[${requestId}] Failed to save images to GCS:`, saveError);
+                // Don't fail the request if storage fails, just log it
+            }
 
             logRequest({ requestId, userEmail, sourceUrl, originApp, ipAddress, status: 'SUCCESS' });
+
+            // Log final user success message
+            console.log(`[${requestId}] Image generation response for user: ${userEmail} | Status: Success`);
 
             // Return response immediately without waiting for file writes (except for product analysis which we await)
 
